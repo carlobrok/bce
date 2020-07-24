@@ -8,14 +8,15 @@
 #ifndef VIDEOSERVER_H
 #define VIDEOSERVER_H
 
+#include "boost/asio.hpp"
+#include "opencv2/opencv.hpp"
+
 #include <iostream>
 #include <string>
 #include <unordered_map>
 #include <queue>
 #include <thread>
 #include <mutex>
-#include "boost/asio.hpp"
-#include "opencv2/opencv.hpp"
 
 using boost::asio::ip::tcp;
 
