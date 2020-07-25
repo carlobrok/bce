@@ -11,7 +11,6 @@
 #include "boost/asio.hpp"
 #include "opencv2/opencv.hpp"
 
-#include <iostream>
 #include <string>
 #include <unordered_map>
 #include <queue>

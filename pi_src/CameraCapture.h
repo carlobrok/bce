@@ -8,11 +8,11 @@
 #ifndef CAMERACAPTURE_H_
 #define CAMERACAPTURE_H_
 
-#include <iostream>
-#include <string>
+#include <opencv2/opencv.hpp>
+
 #include <thread>
 #include <mutex>
-#include <opencv2/opencv.hpp>
+
 
 class CameraCapture {
 public:

@@ -1,5 +1,7 @@
 #include "VideoServer.h"
 
+#include <iostream>
+
 VideoServer::VideoServer(bool l_asyncSend) : m_acceptor(m_ioService, tcp::endpoint(tcp::v4(), 1300)), m_socket(m_ioService) {
 
 	m_asyncSend = l_asyncSend;

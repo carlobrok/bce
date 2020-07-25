@@ -1,5 +1,7 @@
 #include "CameraCapture.h"
 
+#include <iostream>
+
 CameraCapture::CameraCapture(int cam) : m_cap(cam){
 	m_readRetVal = false;
 	m_runThread = std::thread(&CameraCapture::run, this);
