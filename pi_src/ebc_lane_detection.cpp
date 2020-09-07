@@ -1,66 +1,17 @@
-#include "devices.h"
+#include "devices.hpp"
+#include "img_processing.hpp"
+#include "line_calculation.hpp"
 #include "VideoServer.h"
 #include "CameraCapture.h"
 
 #include <opencv2/opencv.hpp>
 
+#include <iostream>
 #include <string>
 #include <vector>
 
 const int num_images = 11;
 //std::string images[num_images] = {};
-
-
-void separate_lines(cv::Mat &warped, cv::Mat &line_binary, int sobel_threshold = 15, int hls_s_threshold = 100) {
-  cv::Mat hls, hls_split[3], hls_s_t;
-  cv::Mat sobel_x, grad_x, sobel_t;
-  cv::Mat combined;
-
-  cv::cvtColor(warped, hls, cv::COLOR_BGR2HLS);
-  cv::split(hls, hls_split);
-
-  cv::Sobel(hls_split[1], sobel_x, CV_64F, 1, 0);
-  cv::convertScaleAbs(sobel_x, grad_x);
-
-  cv::threshold(grad_x, sobel_t, sobel_threshold, 255, cv::THRESH_BINARY);
-  cv::threshold(hls_split[2], hls_s_t, hls_s_threshold, 255, cv::THRESH_BINARY);
-  cv::bitwise_or(sobel_t, hls_s_t, combined);
-
-  cv::morphologyEx(combined, line_binary, cv::MORPH_OPEN, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3,3)));
-
-  cv::imshow("hls", hls);
-  cv::imshow("line_binary", line_binary);
-}
-
-void edge_detection(cv::Mat &img_bgr, cv::Mat &edges, int gauss_kernel_size = 5) {
-  cv::Mat gray, gauss_blur;
-  cv::cvtColor(img_bgr, gray, cv::COLOR_BGR2GRAY);
-
-  cv::GaussianBlur(gray, gauss_blur, cv::Size(gauss_kernel_size, gauss_kernel_size), 0);
-  cv::Canny(gauss_blur, edges, 50,150);
-}
-
-void perspective_warp(cv::Mat &input, cv::Mat &warped) {
-  cv::Point2f src[4] = {{0.26,0.6},{0.73,0.6},{0,1},{1,1}};
-  cv::Point2f dst[4] = {{0,0},{1,0},{0,1},{1,1}};
-
-  for(auto &p : src) {
-    p.x *= input.cols;
-    p.y *= input.rows;
-  }
-
-  for(auto &p : dst) {
-    p.x *= input.cols;
-    p.y *= input.rows;
-  }
-
-  auto M = cv::getPerspectiveTransform(src, dst);
-
-  cv::warpPerspective(input, warped, M, cv::Size(input.cols, input.rows));
-}
-
-
-
 
 int main() {
 
@@ -74,28 +25,66 @@ int main() {
 
 
   do {
-    cv::Mat bgr, filtered_lines, edges, warped, line;
+    cv::Mat bgr, warped, sobel_line, line_binary, histogram;
 
     if (++image_index >= num_images)
       image_index = 0;
 
+// ======== image processing pipeline ========
+
+// load image
     bgr = loaded_imaes[image_index];
     cv::resize(bgr, bgr, cv::Size(1280, 720));
     cv::imshow("input image", bgr);
 
+    //TODO: distortion correction
+
+// generate binary:
+
+    // perspective_warp
     perspective_warp(bgr, warped);
-    separate_lines(warped, line, 50, 70);
 
+    // sobel filtering
+    sobel_filtering(warped, sobel_line);
 
+    // (TODO more binary filtering)
+
+    // histogram peak detection
+    lane_histogram(sobel_line, histogram);
+
+// calculate lines:
+
+    // TODO window search
+    std::vector<WindowBox> left_boxes, right_boxes;
+    window_search(sobel_line, histogram, left_boxes, right_boxes, 9, 200);
+
+    draw_boxes(warped, left_boxes);
+    draw_boxes(warped, right_boxes);
+
+    std::cout << "lbs " << left_boxes.size() << " rbs " << right_boxes.size() << std::endl;
+
+    // TODO curve fitting
+
+// output images:
+
+    // TODO draw overlay
+
+    // send/display video
     cv::imshow("warped", warped);
+    cv::imshow("sobel_line", sobel_line);
+    //cv::imshow("histogram", histogram);
 
-    //filter_line(bgr, filtered_lines, cv::Scalar::all(100));
-    //cv::imshow("filtered_lines", filtered_lines);
+// ========= autonomous driving ========
 
+    // TODO calculate speed and steering
 
-    //edge_detection(filtered_lines, edges);
+    // TODO request for obstacles/state - hande them
 
-    //cv::imshow("edges", edges);
+      // if no ground pause until ground available:
+          // check n more times for ground then
+          // continue;
+
+    // TODO if no obstacles send speed and steering to arduino
 
   } while(cv::waitKey(0) != 'q');
 
