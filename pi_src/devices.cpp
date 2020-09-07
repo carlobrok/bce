@@ -1,4 +1,4 @@
-#include "devices.h"
+#include "devices.hpp"
 
 extern "C" {
     #include <linux/i2c.h>
