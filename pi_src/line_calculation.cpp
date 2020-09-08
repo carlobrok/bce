@@ -2,7 +2,7 @@
 
 #include <opencv2/opencv.hpp>
 #include <thread>
-
+#include <iostream>
 
 WindowBox::WindowBox(cv::Mat& binary_img, int x_center, int y_top, int width, int height, int mincount, bool lane_found)
 {
@@ -58,6 +58,7 @@ const WindowBox WindowBox::get_next_windowbox(cv::Mat& binary_img) const
 			sum += (point.x + x_left);
 		}
 		new_x_center = sum / nonzero.size(); // recenter based on mean
+		std::cout << "nonzeros: " << count_nonzero() << std::endl;
 	}
 	if (new_x_center + this->width / 2 > binary_img.cols) return WindowBox(); // if outside of ROI return empty box
 
@@ -81,20 +82,21 @@ std::ostream& operator<<(std::ostream& out, WindowBox const& window)
 }
 
 
-void window_search(cv::Mat &warped, cv::Mat &histogram, std::vector<WindowBox>& left_boxes, std::vector<WindowBox>& right_boxes, int n_windows, int window_width) {
+void window_search(cv::Mat &line_binary, cv::Mat &histogram, std::vector<WindowBox>& left_boxes, std::vector<WindowBox>& right_boxes, int n_windows, int window_width) {
 
 	cv::Point peak_left, peak_right;
 	lane_peaks(histogram, peak_left, peak_right); // Peaks
 
 	// Initialise left and right window boxes
-	WindowBox wbl(warped, peak_left.x, warped.rows, window_width, warped.rows / n_windows);
-	WindowBox wbr(warped, peak_right.x, warped.rows, window_width, warped.rows / n_windows);
+	WindowBox wbl(line_binary, peak_left.x, line_binary.rows, window_width, line_binary.rows / n_windows);
+	WindowBox wbr(line_binary, peak_right.x, line_binary.rows, window_width, line_binary.rows / n_windows);
 
 	// Parallelize searching
-	std::thread left(find_lane_windows, std::ref(warped), std::ref(wbl), std::ref(left_boxes));
-	std::thread right(find_lane_windows, std::ref(warped), std::ref(wbr), std::ref(right_boxes));
+	std::thread left(find_lane_windows, std::ref(line_binary), std::ref(wbl), std::ref(left_boxes));
+
 
 	left.join();
+	std::thread right(find_lane_windows, std::ref(line_binary), std::ref(wbr), std::ref(right_boxes));
 	right.join();
 
 }

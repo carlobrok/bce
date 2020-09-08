@@ -25,7 +25,7 @@ int main() {
 
 
   do {
-    cv::Mat bgr, warped, sobel_line, line_binary, histogram;
+    cv::Mat bgr, warped, sobel_line, histogram;
 
     if (++image_index >= num_images)
       image_index = 0;
@@ -45,18 +45,18 @@ int main() {
     perspective_warp(bgr, warped);
 
     // sobel filtering
-    sobel_filtering(warped, sobel_line);
+    sobel_filtering(warped, sobel_line, 20, 255);
 
     // (TODO more binary filtering)
 
     // histogram peak detection
-    lane_histogram(sobel_line, histogram);
+    lane_histogram(sobel_line, histogram, sobel_line.rows/4.5);
 
 // calculate lines:
 
     // TODO window search
     std::vector<WindowBox> left_boxes, right_boxes;
-    window_search(sobel_line, histogram, left_boxes, right_boxes, 9, 200);
+    window_search(sobel_line, histogram, left_boxes, right_boxes, 9, 250);
 
     draw_boxes(warped, left_boxes);
     draw_boxes(warped, right_boxes);
