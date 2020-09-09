@@ -3,7 +3,44 @@
 #include <opencv2/opencv.hpp>
 #include <thread>
 #include <iostream>
+#include <cmath>
 
+WindowBox::WindowBox(cv::Point p_start, int width, int height, int min_count) {
+
+	m_center = p_start;
+	m_width = width;
+	m_height = height;
+	m_min_count = min_count;
+
+	m_lane_found = false;
+
+}
+
+void WindowBox::find_lane(cv::Mat &line_binary) {
+	//std::cout << get_window_rect(line_binary) << std::endl;
+	cv::Mat window_roi = line_binary(get_window_rect(line_binary));
+
+	cv::Moments w_moments = cv::moments(window_roi);
+	if (isnan(w_moments.m10/w_moments.m00)) {
+		m_lane_found = false;
+		return;
+
+	}
+	//std::cout << w_moments.m10 / w_moments.m00 + m_center.x - m_width / 2 << std::endl;
+	m_center.x = (int)(w_moments.m10 / w_moments.m00 + m_center.x - m_width / 2);
+	m_lane_found = true;
+}
+
+cv::Rect WindowBox::get_window_rect(cv::Mat &img) const {
+	cv::Rect rect(m_center.x - m_width/2, m_center.y - m_height/2, m_width, m_height);
+	if(rect.x < 0) rect.x = 0;
+	else if(rect.x > img.cols) rect.x = img.cols;
+	if(rect.x + rect.width > img.cols) rect.width = img.cols - rect.x;
+
+	return rect;
+}
+
+/*
 WindowBox::WindowBox(cv::Mat& binary_img, int x_center, int y_top, int width, int height, int mincount, bool lane_found)
 {
 	this->x_center = x_center;
@@ -53,6 +90,9 @@ const WindowBox WindowBox::get_next_windowbox(cv::Mat& binary_img) const
 
 	if (has_line()) {
 
+		//cv::Moments m = cv::moments(nonzero, true);
+		//new_x_center = m.m10/m.m00;
+
 		double sum = 0;
 		for (auto const& point : nonzero) {
 			sum += (point.x + x_left);
@@ -69,7 +109,7 @@ const WindowBox WindowBox::get_next_windowbox(cv::Mat& binary_img) const
 
 bool WindowBox::has_lane(void)
 {
-	if (!lane_found && has_line()) lane_found = true;
+	if (!lane_found && has_line()) lane_wblfound = true;
 	return lane_found;
 }
 
@@ -79,7 +119,7 @@ std::ostream& operator<<(std::ostream& out, WindowBox const& window)
 	out << window.x_right << ", " << window.y_top << "]" << std::endl;
 
 	return out;
-}
+}*/
 
 
 void window_search(cv::Mat &line_binary, cv::Mat &histogram, std::vector<WindowBox>& left_boxes, std::vector<WindowBox>& right_boxes, int n_windows, int window_width) {
@@ -87,18 +127,64 @@ void window_search(cv::Mat &line_binary, cv::Mat &histogram, std::vector<WindowB
 	cv::Point peak_left, peak_right;
 	lane_peaks(histogram, peak_left, peak_right); // Peaks
 
+	int window_height = line_binary.rows / n_windows;
+
+	peak_left.y = line_binary.rows - window_height/2;
+	peak_right.y = line_binary.rows - window_height/2;
+
+	//std::cout << "starting at: l" << peak_left << "  r" << peak_right << std::endl;
+
 	// Initialise left and right window boxes
-	WindowBox wbl(line_binary, peak_left.x, line_binary.rows, window_width, line_binary.rows / n_windows);
-	WindowBox wbr(line_binary, peak_right.x, line_binary.rows, window_width, line_binary.rows / n_windows);
+	WindowBox wbl(peak_left,  window_width, window_height);
+	WindowBox wbr(peak_right, window_width, window_height);
+
+	find_lane_windows(line_binary, wbl, left_boxes);
+	find_lane_windows(line_binary, wbr, right_boxes);
 
 	// Parallelize searching
-	std::thread left(find_lane_windows, std::ref(line_binary), std::ref(wbl), std::ref(left_boxes));
+	//std::thread left(find_lane_windows, std::ref(line_binary), std::ref(wbl), std::ref(left_boxes));
+	//std::thread right(find_lane_windows, std::ref(line_binary), std::ref(wbr), std::ref(right_boxes));
+	//left.join();
+	//right.join();
 
+}
 
-	left.join();
-	std::thread right(find_lane_windows, std::ref(line_binary), std::ref(wbr), std::ref(right_boxes));
-	right.join();
+void find_lane_windows(cv::Mat& binary_img, WindowBox &window_box, std::vector<WindowBox>& wboxes)
+{
+	window_box.find_lane(binary_img);
+	wboxes.push_back(window_box);
+	cv::Point next_p_start = window_box.get_next_start();
+	while(next_p_start.y > 0) {
+		WindowBox w_new(next_p_start, window_box.get_width(), window_box.get_height());
+		w_new.find_lane(binary_img);
+		wboxes.push_back(w_new);
+		next_p_start = w_new.get_next_start();
+		//std::cout << "next start: " << next_p_start << std::endl;
+	}
 
+	/*bool continue_lane_search = true;
+	int contiguous_box_no_line_count = 0;
+
+	// keep searching up the image for a lane lineand append the boxes
+	while (continue_lane_search && window_box.y_top > 0) {
+		if (window_box.has_line())
+			wboxes.push_back(window_box);
+		window_box = window_box.get_next_windowbox(binary_img);
+
+		// if we've found the lane and can no longer find a box with a line in it
+		// then its no longer worth while searching
+		if (window_box.has_lane()) {
+			if (window_box.has_line()) {
+				contiguous_box_no_line_count = 0;
+			} else {
+				contiguous_box_no_line_count += 1;
+				if (contiguous_box_no_line_count >= 4)
+					continue_lane_search = false;
+			}
+		}
+	}*/
+
+	return;
 }
 
 
@@ -120,32 +206,16 @@ void lane_peaks(cv::Mat const& histogram, cv::Point& left_max_loc, cv::Point& ri
 }
 
 
-void find_lane_windows(cv::Mat& binary_img, WindowBox& window_box, std::vector<WindowBox>& wboxes)
-{
-	bool continue_lane_search = true;
-	int contiguous_box_no_line_count = 0;
-
-	// keep searching up the image for a lane lineand append the boxes
-	while (continue_lane_search && window_box.y_top > 0) {
-		if (window_box.has_line())
-			wboxes.push_back(window_box);
-		window_box = window_box.get_next_windowbox(binary_img);
-
-		// if we've found the lane and can no longer find a box with a line in it
-		// then its no longer worth while searching
-		if (window_box.has_lane()) {
-			if (window_box.has_line()) {
-				contiguous_box_no_line_count = 0;
-			} else {
-				contiguous_box_no_line_count += 1;
-				if (contiguous_box_no_line_count >= 4)
-					continue_lane_search = false;
-			}
+void draw_boxes(cv::Mat& img, const std::vector<WindowBox>& boxes) {
+	// Draw the windows on the output image
+	for (const auto& box : boxes) {
+		if(box.has_lane()) {
+			cv::rectangle(img, box.get_window_rect(img), cv::Scalar(0, 255, 0), 2);
+			cv::circle(img, box.get_center(), 2, cv::Scalar(0,0,255), 2);
 		}
 	}
-
-	return;
 }
+
 
 void polyfit(const cv::Mat& src_x, const cv::Mat& src_y, cv::Mat& dst, int order) {
 	CV_Assert((src_x.rows > 0) && (src_y.rows > 0) && (src_x.cols == 1) && (src_y.cols == 1)
@@ -168,13 +238,4 @@ void polyfit(const cv::Mat& src_x, const cv::Mat& src_y, cv::Mat& dst, int order
 	cv::Mat temp3 = temp2 * X_t;
 	cv::Mat W = temp3 * src_y;
 	W.copyTo(dst);
-}
-
-
-
-void draw_boxes(cv::Mat& img, const std::vector<WindowBox>& boxes) {
-	// Draw the windows on the output image
-	for (const auto& box : boxes) {
-		cv::rectangle(img, box.get_bottom_left_point(), box.get_top_right_point(), cv::Scalar(0, 255, 0), 2);
-	}
 }
