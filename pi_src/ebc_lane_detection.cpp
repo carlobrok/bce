@@ -3,6 +3,7 @@
 #include "line_calculation.hpp"
 #include "VideoServer.h"
 #include "CameraCapture.h"
+#include "poly_regr.h"
 
 #include <opencv2/opencv.hpp>
 
@@ -46,20 +47,36 @@ int main() {
 
     // sobel filtering
     sobel_filtering(warped, sobel_line, 20, 255);
+    cv::imshow("sobel_line", sobel_line);
 
     // (TODO more binary filtering)
 
     // histogram peak detection
-    lane_histogram(sobel_line, histogram, sobel_line.rows/4.5);
+    lane_histogram(sobel_line, histogram, sobel_line.rows/2);
 
 // calculate lines:
-
     // TODO window search
     std::vector<WindowBox> left_boxes, right_boxes;
-    window_search(sobel_line, histogram, left_boxes, right_boxes, 9, 250);
+    window_search(sobel_line, histogram, left_boxes, right_boxes, 12, 200);
 
     draw_boxes(warped, left_boxes);
     draw_boxes(warped, right_boxes);
+    cv::imshow("warped", warped);
+
+    std::vector<double> lx;
+    std::vector<double> ly;
+    std::vector<double> coeffs;
+
+    for(auto & box: left_boxes) {
+      lx.push_back(box.get_center().x);
+      ly.push_back(box.get_center().y);
+    }
+
+    PolynomialRegression<double> poly_regr;
+    if(poly_regr.fitIt(lx, ly, 2, coeffs)) {
+      std::cout << "equation: f=" << coeffs[0] << " + " << coeffs[1] << "x + " << coeffs[2]  << "x^2" << std::endl;
+    }
+
 
     std::cout << "lbs " << left_boxes.size() << " rbs " << right_boxes.size() << std::endl;
 
@@ -70,8 +87,6 @@ int main() {
     // TODO draw overlay
 
     // send/display video
-    cv::imshow("warped", warped);
-    cv::imshow("sobel_line", sobel_line);
     //cv::imshow("histogram", histogram);
 
 // ========= autonomous driving ========
