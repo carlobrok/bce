@@ -1,9 +1,9 @@
 #include "devices.hpp"
 #include "img_processing.hpp"
 #include "line_calculation.hpp"
+#include "drive_calculation.hpp"
 #include "VideoServer.h"
 #include "CameraCapture.h"
-#include "poly_regr.h"
 
 #include <opencv2/opencv.hpp>
 
@@ -35,7 +35,7 @@ int main() {
 
 // load image
     bgr = loaded_imaes[image_index];
-    cv::resize(bgr, bgr, cv::Size(1280, 720));
+    cv::resize(bgr, bgr, cv::Size(1000, 600));
     cv::imshow("input image", bgr);
 
     //TODO: distortion correction
@@ -49,50 +49,30 @@ int main() {
     sobel_filtering(warped, sobel_line, 20, 255);
     cv::imshow("sobel_line", sobel_line);
 
-    // (TODO more binary filtering)
+    // (IDEA more binary filtering)
 
     // histogram peak detection
     lane_histogram(sobel_line, histogram, sobel_line.rows/2);
 
 // calculate lines:
-    // TODO window search
+    // window search
     std::vector<WindowBox> left_boxes, right_boxes;
     window_search(sobel_line, histogram, left_boxes, right_boxes, 12, 200);
 
-    draw_boxes(warped, left_boxes);
-    draw_boxes(warped, right_boxes);
-    cv::imshow("warped", warped);
-
-    std::vector<double> lx;
-    std::vector<double> ly;
-    std::vector<double> coeffs;
-
-    for(auto & box: left_boxes) {
-      lx.push_back(box.get_center().x);
-      ly.push_back(box.get_center().y);
-    }
-
-    PolynomialRegression<double> poly_regr;
-    if(poly_regr.fitIt(lx, ly, 2, coeffs)) {
-      std::cout << "equation: f=" << coeffs[0] << " + " << coeffs[1] << "x + " << coeffs[2]  << "x^2" << std::endl;
-    }
-
-
     std::cout << "lbs " << left_boxes.size() << " rbs " << right_boxes.size() << std::endl;
 
-    // TODO curve fitting
-
-// output images:
-
-    // TODO draw overlay
-
-    // send/display video
-    //cv::imshow("histogram", histogram);
+    std::vector<cv::Point> midpoints;
+    calc_midpoints(left_boxes, right_boxes, midpoints);
 
 // ========= autonomous driving ========
 
-    // TODO calculate speed and steering
+    // calculate speed from midpoints
+    int speed = calc_speed(midpoints);
 
+    // calculate steering
+    double angle = calc_angle(warped, midpoints, true);
+
+    std::cout << "speed, angle: " << speed << ", " << angle << std::endl;
     // TODO request for obstacles/state - hande them
 
       // if no ground pause until ground available:
@@ -100,6 +80,18 @@ int main() {
           // continue;
 
     // TODO if no obstacles send speed and steering to arduino
+
+// output images:
+
+    // TODO draw overlay
+
+    draw_boxes(warped, left_boxes);
+    draw_boxes(warped, right_boxes);
+    cv::imshow("warped", warped);
+
+    // send/display video
+    //cv::imshow("histogram", histogram);
+
 
   } while(cv::waitKey(0) != 'q');
 

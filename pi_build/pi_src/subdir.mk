@@ -6,6 +6,7 @@ CPP_SRCS += \
 ../pi_src/devices.cpp \
 ../pi_src/img_processing.cpp \
 ../pi_src/line_calculation.cpp \
+../pi_src/drive_calculation.cpp \
 
 OBJS += \
 ./pi_src/ebc_lane_detection.o \
@@ -14,6 +15,7 @@ OBJS += \
 ./pi_src/devices.o \
 ./pi_src/img_processing.o \
 ./pi_src/line_calculation.o \
+./pi_src/drive_calculation.o \
 
 CPP_DEPS += \
 ./pi_src/ebc_lane_detection.d \
@@ -22,6 +24,7 @@ CPP_DEPS += \
 ./pi_src/devices.d \
 ./pi_src/img_processing.d \
 ./pi_src/line_calculation.d \
+./pi_src/drive_calculation.d \
 
 # Each subdirectory must supply rules for building sources it contributes
 pi_src/%.o: ../pi_src/%.cpp
