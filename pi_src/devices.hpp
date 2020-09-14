@@ -16,7 +16,8 @@ namespace mot {
   // WHAT TO DO   (DO NOT USE! Only used by functions)
   enum commands {
     SET_DIR_PWM,
-    SET_SERVO,
+    SET_DIR_PWM_STEER,
+    SET_STEER,
     SET_STATE,
     GET_STATE
   };
