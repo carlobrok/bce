@@ -1,9 +1,9 @@
 #include "Wire.h"
 #include "Servo.h"
 
-//#define SERIAL_OUTPUT
+#define SERIAL_OUTPUT
 const int SLAVE_ADDRESS = 0x08;
-const int SERVO_PIN = 9;
+const int SERVO_PIN = 3;
 const int NORMAL_SPEED = 50;
 
 // WHAT TO DO   (DO NOT USE! Only used by functions)
@@ -30,25 +30,29 @@ enum states_read {
   OFF_OBSTACLE    // read only
 };
 
-// TODO: define pins
-const int _pin_d = 0;
-const int _pin_in1 = 0;
-const int _pin_in2 = 0;
+// REVIEW: define pins
+const int d2_1 = 5;
+const int d2_2 = 6;
+const int in1_1 = 7;
+const int in2_1 = 8;
+const int in1_2 = 9;
+const int in2_2 = 10;
 
-Servo steering_servo(SERVO_PIN);
+Servo steering_servo;
 
 int direction = MOTOR_FORWARD, speed = 0, state = OFF;
 double steer_angle = 0;
 
 
 
+// === Function declaration ====
 
 void fwd(int speed = NORMAL_SPEED);
 void bwd(int speed = NORMAL_SPEED);
 void off(bool brake = false);
 void update_mot(int dir, int pwm);
 
-void steer(double angle);
+void steer(float angle);
 
 
 template<class T>
@@ -70,38 +74,65 @@ inline void recieveError() {
 }
 
 // TODO: debug the check_length function
-template <size_t N>
-void check_length(int (&inbytes)[N], size_t length_needed) {
-  if(needed != N) recieveError();
+void check_length(int array_size, int length_needed) {
+  if(length_needed != array_size) recieveError();
 }
+
+// end: function declaration ====
 
 
 void setup() {
-  Wire.begin(SLAVE_ADDRESS);
-  Wire.onReceive(receiveEvent);
-  Wire.onRequest(requestEvent);
-
-  pinMode(LED_BUILTIN, OUTPUT);
-
 #ifdef SERIAL_OUTPUT
   Serial.begin(115200);
 #endif
-  println("Motoren / Servo Arduino");
-  print("Adresse: "); Serial.println(SLAVE_ADDRESS);
+  println("motor / steering Arduino");
+  println("init i2c com..");
+  // Setup i2c communication
+  Wire.begin(SLAVE_ADDRESS);
+  Wire.onReceive(receiveEvent);
+  Wire.onRequest(requestEvent);
+  print("address: "); println(SLAVE_ADDRESS);
+  
+  // initialize Servo
+  println("init servo..");
+  steering_servo.attach(SERVO_PIN);
+  steer(0);
+
+  // init led
+  println("init pinouts..");
+  pinMode(LED_BUILTIN, OUTPUT);
+  
+  // initialize pins for motor driver
+  pinMode(d2_1, OUTPUT);
+  pinMode(d2_2, OUTPUT);
+  pinMode(in1_1, OUTPUT);
+  pinMode(in2_1, OUTPUT);
+  pinMode(in1_1, OUTPUT);
+  pinMode(in2_1, OUTPUT);  
+
+  for (int i = 0; i < 3; i++) {
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(150);
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(100);
+  }
+  println("done.");
 }
 
 void loop() {
   digitalWrite(LED_BUILTIN, HIGH);
   delay(100);
+  fwd();
   digitalWrite(LED_BUILTIN, LOW);
   delay(3000 - 100);
+  off();
 }
 
+// TODO: debug receiving
 void receiveEvent(int byte_amount) {
-  // TODO: debug receiving
+  
   print("Anzahl: ");
   println(byte_amount);
-
 
   if (byte_amount == 2) {
     recieveError();
@@ -123,33 +154,29 @@ void receiveEvent(int byte_amount) {
   int index = 0;
   print("  data: [");
   while (Wire.available()/* && index < byte_amount - 2*/) {
-    inbytes[index++] = Wire.read();
-    print(inbytes[index - 1]);
+    inbytes[index] = Wire.read();
+    print(inbytes[index]);
     if(Wire.available() > 0)
       print(";");
+    index++;
   }
   println("]");
 
   switch (command) {
     case SET_DIR_PWM:
       println("SET_DIR_PWM");
-      check_length(inbytes, 2);
-      int dir = inbytes[0];
-      int pwm = inbytes[1];
-
-      update_mot(dir, pwm);
+      check_length(index, 2);
+      
+      update_mot(inbytes[0], inbytes[1]);
 
       break;
 
     case SET_DIR_PWM_STEER:
       println("SET_DIR_PWM_STEER");
-      check_length(inbytes, 3);
-      int dir = inbytes[0];
-      int pwm = inbytes[1];
-      int angle = inbytes[2];
-
-      update_mot(dir, pwm);
-      steer(angle);
+      check_length(index, 3);
+      
+      update_mot(inbytes[0], inbytes[1]);
+      steer(inbytes[2]);
 
       break;
 
@@ -157,26 +184,29 @@ void receiveEvent(int byte_amount) {
       // TODO: calculate angle from x bytes received by i2c
 
       println("SET_STEER");
-      check_length(inbytes, 1);
-      int angle = inbytes[0];
-
-      steer(angle);
+      check_length(index, 1);
+      
+      steer(inbytes[0]);
 
       break;
 
     case SET_STATE:
       println("SET_STEER");
-      check_length(inbytes, 1);
-      int state = inbytes[0];
-
-      if (state == OFF) {
+      check_length(index, 1);
+      
+      if (inbytes[0] == OFF) {
         off();
-      } else if (state == OFF_BRAKE) {
+      } else if (inbytes[0] == OFF_BRAKE) {
         off(true);
       }
 
       break;
 
+    case GET_STATE:
+      println("getstate requested.");
+      
+      break;
+      
     default:
       recieveError();
       break;
@@ -195,21 +225,31 @@ void requestEvent() {
 // TODO: PID controller
 
 void fwd(int speed) {
-  digitalWrite(_pin_in1, LOW);
-  digitalWrite(_pin_in2, HIGH);
-  analogWrite(_pin_d, speed);
+  digitalWrite(in1_1, LOW);
+  digitalWrite(in1_2, LOW);
+  digitalWrite(in2_1, HIGH);
+  digitalWrite(in2_2, HIGH);
+  analogWrite(d2_1, speed);
+  analogWrite(d2_2, speed);
 }
 
 void bwd(int speed) {
-  digitalWrite(_pin_in1, HIGH);
-  digitalWrite(_pin_in2, LOW);
-  analogWrite(_pin_d, speed);
+  digitalWrite(in1_1, HIGH);
+  digitalWrite(in1_2, HIGH);
+  digitalWrite(in2_1, LOW);
+  digitalWrite(in2_2, LOW);
+  analogWrite(d2_1, speed);
+  analogWrite(d2_2, speed);
 }
 
-void off(bool brake = false) {
-  digitalWrite(_pin_in1, LOW);
-  digitalWrite(_pin_in2, LOW);
-  analogWrite(_pin_d, 0);
+void off(bool brake) {
+  digitalWrite(in1_1, LOW);
+  digitalWrite(in1_2, LOW);
+  digitalWrite(in2_1, LOW);
+  digitalWrite(in2_2, LOW);
+  analogWrite(d2_1, 0);
+  analogWrite(d2_2, 0);
+  
 }
 
 void update_mot(int dir, int pwm) {
@@ -224,10 +264,10 @@ void update_mot(int dir, int pwm) {
 
 // Steering function
 
-void steer(double angle) {
+void steer(float angle) {
   // TODO: calculate pwm from angle
   int servo_angle = angle;
 
 
-  steering_servo.set(servo_angle);
+  steering_servo.write(servo_angle);
 }
