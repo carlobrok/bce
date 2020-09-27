@@ -30,6 +30,8 @@ enum states_read {
   OFF_OBSTACLE    // read only
 };
 
+// Motor variables
+
 // REVIEW: define pins
 const int d2_m1 = 5;
 const int d2_m2 = 6;
@@ -38,9 +40,14 @@ const int in2_m1 = 8;
 const int in1_m2 = 9;
 const int in2_m2 = 10;
 
-Servo steering_servo;
+int mot_dir = MOTOR_FORWARD, mot_speed = 0, mot_state = OFF;
 
-int direction = MOTOR_FORWARD, speed = 0, state = OFF;
+// Steering servro variables
+
+const int STEER_PWM_LEFT = 52;
+const int STEER_PWM_RIGHT = 115;
+
+Servo steering_servo;
 double steer_angle = 0;
 
 
@@ -96,7 +103,7 @@ void setup() {
   // initialize Servo
   println("init servo..");
   steering_servo.attach(SERVO_PIN);
-  steer(0);
+  steer((STEER_PWM_LEFT + STEER_PWM_RIGHT) / 2);
 
   // init led
   println("init pinouts..");
@@ -121,11 +128,12 @@ void setup() {
 
 void loop() {
   digitalWrite(LED_BUILTIN, HIGH);
-  delay(100);
-  fwd();
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(3000 - 100);
+  fwd(255);
+  delay(2000);
   off();
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(3000 - 2000);
+
 }
 
 // TODO: debug receiving
@@ -217,13 +225,13 @@ void receiveEvent(int byte_amount) {
 
 void requestEvent() {
   // TODO: debug state sending
-  Wire.write(state);
+  Wire.write(mot_state);
 }
 
 
 // Motor functions
 // TODO: PID controller
-
+// TODO: inverse directions
 void fwd(int speed) {
   digitalWrite(in1_m1, LOW);
   digitalWrite(in1_m2, LOW);
@@ -231,6 +239,8 @@ void fwd(int speed) {
   digitalWrite(in2_m2, HIGH);
   analogWrite(d2_m1, speed);
   analogWrite(d2_m2, speed);
+  mot_state = ON;
+  mot_dir = MOTOR_FORWARD;
 }
 
 void bwd(int speed) {
@@ -240,6 +250,8 @@ void bwd(int speed) {
   digitalWrite(in2_m2, LOW);
   analogWrite(d2_m1, speed);
   analogWrite(d2_m2, speed);
+  mot_state = ON;
+  mot_dir = MOTOR_BACKWARD;
 }
 
 void off(bool brake) {
@@ -249,6 +261,8 @@ void off(bool brake) {
   digitalWrite(in2_m2, LOW);
   analogWrite(d2_m1, 0);
   analogWrite(d2_m2, 0);
+  mot_speed = 0;
+  mot_state = OFF;
 
 }
 
@@ -267,7 +281,6 @@ void update_mot(int dir, int pwm) {
 void steer(float angle) {
   // TODO: calculate pwm from angle
   int servo_angle = angle;
-
 
   steering_servo.write(servo_angle);
 }
