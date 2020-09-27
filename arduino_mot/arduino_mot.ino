@@ -30,6 +30,8 @@ enum states_read {
   OFF_OBSTACLE    // read only
 };
 
+// Motor variables
+
 // REVIEW: define pins
 const int d2_1 = 5;
 const int d2_2 = 6;
@@ -38,9 +40,14 @@ const int in2_1 = 8;
 const int in1_2 = 9;
 const int in2_2 = 10;
 
-Servo steering_servo;
+int mot_dir = MOTOR_FORWARD, mot_speed = 0, mot_state = OFF;
 
-int direction = MOTOR_FORWARD, speed = 0, state = OFF;
+// Steering servro variables
+
+const int STEER_PWM_LEFT = 52;
+const int STEER_PWM_RIGHT = 115;
+
+Servo steering_servo;
 double steer_angle = 0;
 
 
@@ -92,23 +99,23 @@ void setup() {
   Wire.onReceive(receiveEvent);
   Wire.onRequest(requestEvent);
   print("address: "); println(SLAVE_ADDRESS);
-  
+
   // initialize Servo
   println("init servo..");
   steering_servo.attach(SERVO_PIN);
-  steer(0);
+  steer((STEER_PWM_LEFT + STEER_PWM_RIGHT) / 2);
 
   // init led
   println("init pinouts..");
   pinMode(LED_BUILTIN, OUTPUT);
-  
+
   // initialize pins for motor driver
   pinMode(d2_1, OUTPUT);
   pinMode(d2_2, OUTPUT);
   pinMode(in1_1, OUTPUT);
   pinMode(in2_1, OUTPUT);
   pinMode(in1_1, OUTPUT);
-  pinMode(in2_1, OUTPUT);  
+  pinMode(in2_1, OUTPUT);
 
   for (int i = 0; i < 3; i++) {
     digitalWrite(LED_BUILTIN, HIGH);
@@ -121,16 +128,17 @@ void setup() {
 
 void loop() {
   digitalWrite(LED_BUILTIN, HIGH);
-  delay(100);
-  fwd();
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(3000 - 100);
+  fwd(255);
+  delay(2000);
   off();
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(3000 - 2000);
+  
 }
 
 // TODO: debug receiving
 void receiveEvent(int byte_amount) {
-  
+
   print("Anzahl: ");
   println(byte_amount);
 
@@ -166,7 +174,7 @@ void receiveEvent(int byte_amount) {
     case SET_DIR_PWM:
       println("SET_DIR_PWM");
       check_length(index, 2);
-      
+
       update_mot(inbytes[0], inbytes[1]);
 
       break;
@@ -174,7 +182,7 @@ void receiveEvent(int byte_amount) {
     case SET_DIR_PWM_STEER:
       println("SET_DIR_PWM_STEER");
       check_length(index, 3);
-      
+
       update_mot(inbytes[0], inbytes[1]);
       steer(inbytes[2]);
 
@@ -185,7 +193,7 @@ void receiveEvent(int byte_amount) {
 
       println("SET_STEER");
       check_length(index, 1);
-      
+
       steer(inbytes[0]);
 
       break;
@@ -193,7 +201,7 @@ void receiveEvent(int byte_amount) {
     case SET_STATE:
       println("SET_STEER");
       check_length(index, 1);
-      
+
       if (inbytes[0] == OFF) {
         off();
       } else if (inbytes[0] == OFF_BRAKE) {
@@ -204,9 +212,9 @@ void receiveEvent(int byte_amount) {
 
     case GET_STATE:
       println("getstate requested.");
-      
+
       break;
-      
+
     default:
       recieveError();
       break;
@@ -217,29 +225,33 @@ void receiveEvent(int byte_amount) {
 
 void requestEvent() {
   // TODO: debug state sending
-  Wire.write(state);
+  Wire.write(mot_state);
 }
 
 
 // Motor functions
 // TODO: PID controller
-
+// TODO: inverse directions
 void fwd(int speed) {
-  digitalWrite(in1_1, LOW);
-  digitalWrite(in1_2, LOW);
-  digitalWrite(in2_1, HIGH);
-  digitalWrite(in2_2, HIGH);
-  analogWrite(d2_1, speed);
-  analogWrite(d2_2, speed);
-}
-
-void bwd(int speed) {
   digitalWrite(in1_1, HIGH);
   digitalWrite(in1_2, HIGH);
   digitalWrite(in2_1, LOW);
   digitalWrite(in2_2, LOW);
   analogWrite(d2_1, speed);
   analogWrite(d2_2, speed);
+  mot_state = ON;
+  mot_dir = MOTOR_FORWARD;
+}
+
+void bwd(int speed) {
+  digitalWrite(in1_1, LOW);
+  digitalWrite(in1_2, LOW);
+  digitalWrite(in2_1, HIGH);
+  digitalWrite(in2_2, HIGH);
+  analogWrite(d2_1, speed);
+  analogWrite(d2_2, speed);
+  mot_state = ON;
+  mot_dir = MOTOR_BACKWARD;
 }
 
 void off(bool brake) {
@@ -249,7 +261,8 @@ void off(bool brake) {
   digitalWrite(in2_2, LOW);
   analogWrite(d2_1, 0);
   analogWrite(d2_2, 0);
-  
+  mot_speed = 0;
+  mot_state = OFF;
 }
 
 void update_mot(int dir, int pwm) {
@@ -267,7 +280,6 @@ void update_mot(int dir, int pwm) {
 void steer(float angle) {
   // TODO: calculate pwm from angle
   int servo_angle = angle;
-
-
+  
   steering_servo.write(servo_angle);
 }
