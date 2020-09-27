@@ -31,12 +31,12 @@ enum states_read {
 };
 
 // REVIEW: define pins
-const int d2_1 = 5;
-const int d2_2 = 6;
-const int in1_1 = 7;
-const int in2_1 = 8;
-const int in1_2 = 9;
-const int in2_2 = 10;
+const int d2_m1 = 5;
+const int d2_m2 = 6;
+const int in1_m1 = 7;
+const int in2_m1 = 8;
+const int in1_m2 = 9;
+const int in2_m2 = 10;
 
 Servo steering_servo;
 
@@ -92,7 +92,7 @@ void setup() {
   Wire.onReceive(receiveEvent);
   Wire.onRequest(requestEvent);
   print("address: "); println(SLAVE_ADDRESS);
-  
+
   // initialize Servo
   println("init servo..");
   steering_servo.attach(SERVO_PIN);
@@ -101,14 +101,14 @@ void setup() {
   // init led
   println("init pinouts..");
   pinMode(LED_BUILTIN, OUTPUT);
-  
+
   // initialize pins for motor driver
-  pinMode(d2_1, OUTPUT);
-  pinMode(d2_2, OUTPUT);
-  pinMode(in1_1, OUTPUT);
-  pinMode(in2_1, OUTPUT);
-  pinMode(in1_1, OUTPUT);
-  pinMode(in2_1, OUTPUT);  
+  pinMode(d2_m1, OUTPUT);
+  pinMode(d2_m2, OUTPUT);
+  pinMode(in1_m1, OUTPUT);
+  pinMode(in2_m1, OUTPUT);
+  pinMode(in1_m1, OUTPUT);
+  pinMode(in2_m1, OUTPUT);
 
   for (int i = 0; i < 3; i++) {
     digitalWrite(LED_BUILTIN, HIGH);
@@ -130,7 +130,7 @@ void loop() {
 
 // TODO: debug receiving
 void receiveEvent(int byte_amount) {
-  
+
   print("Anzahl: ");
   println(byte_amount);
 
@@ -166,7 +166,7 @@ void receiveEvent(int byte_amount) {
     case SET_DIR_PWM:
       println("SET_DIR_PWM");
       check_length(index, 2);
-      
+
       update_mot(inbytes[0], inbytes[1]);
 
       break;
@@ -174,7 +174,7 @@ void receiveEvent(int byte_amount) {
     case SET_DIR_PWM_STEER:
       println("SET_DIR_PWM_STEER");
       check_length(index, 3);
-      
+
       update_mot(inbytes[0], inbytes[1]);
       steer(inbytes[2]);
 
@@ -185,7 +185,7 @@ void receiveEvent(int byte_amount) {
 
       println("SET_STEER");
       check_length(index, 1);
-      
+
       steer(inbytes[0]);
 
       break;
@@ -193,7 +193,7 @@ void receiveEvent(int byte_amount) {
     case SET_STATE:
       println("SET_STEER");
       check_length(index, 1);
-      
+
       if (inbytes[0] == OFF) {
         off();
       } else if (inbytes[0] == OFF_BRAKE) {
@@ -204,9 +204,9 @@ void receiveEvent(int byte_amount) {
 
     case GET_STATE:
       println("getstate requested.");
-      
+
       break;
-      
+
     default:
       recieveError();
       break;
@@ -225,31 +225,31 @@ void requestEvent() {
 // TODO: PID controller
 
 void fwd(int speed) {
-  digitalWrite(in1_1, LOW);
-  digitalWrite(in1_2, LOW);
-  digitalWrite(in2_1, HIGH);
-  digitalWrite(in2_2, HIGH);
-  analogWrite(d2_1, speed);
-  analogWrite(d2_2, speed);
+  digitalWrite(in1_m1, LOW);
+  digitalWrite(in1_m2, LOW);
+  digitalWrite(in2_m1, HIGH);
+  digitalWrite(in2_m2, HIGH);
+  analogWrite(d2_m1, speed);
+  analogWrite(d2_m2, speed);
 }
 
 void bwd(int speed) {
-  digitalWrite(in1_1, HIGH);
-  digitalWrite(in1_2, HIGH);
-  digitalWrite(in2_1, LOW);
-  digitalWrite(in2_2, LOW);
-  analogWrite(d2_1, speed);
-  analogWrite(d2_2, speed);
+  digitalWrite(in1_m1, HIGH);
+  digitalWrite(in1_m2, HIGH);
+  digitalWrite(in2_m1, LOW);
+  digitalWrite(in2_m2, LOW);
+  analogWrite(d2_m1, speed);
+  analogWrite(d2_m2, speed);
 }
 
 void off(bool brake) {
-  digitalWrite(in1_1, LOW);
-  digitalWrite(in1_2, LOW);
-  digitalWrite(in2_1, LOW);
-  digitalWrite(in2_2, LOW);
-  analogWrite(d2_1, 0);
-  analogWrite(d2_2, 0);
-  
+  digitalWrite(in1_m1, LOW);
+  digitalWrite(in1_m2, LOW);
+  digitalWrite(in2_m1, LOW);
+  digitalWrite(in2_m2, LOW);
+  analogWrite(d2_m1, 0);
+  analogWrite(d2_m2, 0);
+
 }
 
 void update_mot(int dir, int pwm) {
