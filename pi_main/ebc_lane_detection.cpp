@@ -19,7 +19,7 @@ int main() {
   cv::Mat loaded_imaes[num_images];
 
   for(int i = 0; i < num_images; i++) {
-    std::string cur_image_path = std::string("../pi_src/media/test") + std::to_string(i+1) + std::string(".jpg");
+    std::string cur_image_path = std::string("../pi_main/media/test") + std::to_string(i+1) + std::string(".jpg");
     loaded_imaes[i] = cv::imread(cur_image_path);
   }
   int image_index = 0;

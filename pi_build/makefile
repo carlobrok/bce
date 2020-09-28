@@ -3,52 +3,39 @@
 RM := rm -rf
 
 # All of the sources participating in the build are defined here
--include sources.mk
--include pi_src/subdir.mk
--include subdir.mk
+-include pi_main/subdir.mk
+-include pi_calibrate/subdir.mk
 -include objects.mk
-
-ifneq ($(MAKECMDGOALS),clean)
-ifneq ($(strip $(CC_DEPS)),)
--include $(CC_DEPS)
-endif
-ifneq ($(strip $(C++_DEPS)),)
--include $(C++_DEPS)
-endif
-ifneq ($(strip $(C_UPPER_DEPS)),)
--include $(C_UPPER_DEPS)
-endif
-ifneq ($(strip $(CXX_DEPS)),)
--include $(CXX_DEPS)
-endif
-ifneq ($(strip $(CPP_DEPS)),)
--include $(CPP_DEPS)
-endif
-ifneq ($(strip $(C_DEPS)),)
--include $(C_DEPS)
-endif
-endif
 
 -include ../makefile.defs
 
 # Add inputs and outputs from these tool invocations to the build variables
 
+EXECUTABLES := \
+	ebc_lane_detection \
+	ebc_calibrate \
+
 # All Target
-all: ebc_lane_detection
-
-
+all: $(EXECUTABLES)
 
 # Tool invocations
-ebc_lane_detection: $(OBJS) $(USER_OBJS)
+ebc_lane_detection: $(OBJS_EBC_LD)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	g++ -o "ebc_lane_detection" $(OBJS) $(USER_OBJS) -L /usr/local/lib/ $(LIBS)
+	g++ -o "ebc_lane_detection" $(OBJS_EBC_LD) -L /usr/local/lib/ $(LIBS)
+	@echo 'Finished building target: $@'
+	@echo ' '
+
+ebc_calibrate: $(OBJS_EBC_CAL)
+	@echo 'Building target: $@'
+	@echo 'Invoking: GCC C++ Linker'
+	g++ -o "ebc_calibrate" $(OBJS_EBC_CAL) -L /usr/local/lib/ $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(CC_DEPS)$(C++_DEPS)$(EXECUTABLES)$(C_UPPER_DEPS)$(CXX_DEPS)$(OBJS)$(CPP_DEPS)$(C_DEPS) ebc_lane_detection
+	-$(RM) $(EXECUTABLES)$(OBJS_EBC_LD)$(OBJS_EBC_CAL)$(CPP_DEPS_EBC_LD)$(CPP_DEPS_EBC_CAL)
 	-@echo ' '
 
 .PHONY: all clean dependents
