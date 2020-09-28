@@ -32,6 +32,7 @@
 *.app
 
 ebc_lane_detection
+ebc_calibrate
 
 # Media files
 *.jpg
