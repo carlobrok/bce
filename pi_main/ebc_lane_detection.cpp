@@ -21,6 +21,10 @@ int main() {
   srv.namedWindow("input image");
 	srv.namedWindow("sobel_line");
 	srv.namedWindow("warped");
+  srv.namedWindow("sobel_grad");
+  srv.namedWindow("sobel_thresholded_img");
+  srv.namedWindow("hls");
+  srv.namedWindow("sobel_line");
 
   while(1) {
     cv::Mat bgr, warped, sobel_line, histogram;
