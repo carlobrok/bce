@@ -75,7 +75,7 @@ namespace srv {
 	}
 
 	void imshow(const std::string & f_windowName, const cv::Mat & f_image){
-		window_map::iterator l_element = m_windowMap.find(f_windowName);
+		window_map::iterator l_element = m_windowMap.find(f_windowName.substr(0,20));
 
 		if(l_element != m_windowMap.end()){
 			if(l_element->second.readyForData && (m_asyncSend || (!m_asyncSend && m_readyForData))){

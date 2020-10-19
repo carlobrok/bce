@@ -22,7 +22,7 @@ int main() {
 	srv::namedWindow("sobel_line");
 	srv::namedWindow("warped");
   srv::namedWindow("sobel_grad");
-  srv::namedWindow("sobel_thresholded_img");
+  srv::namedWindow("sobel_thresh");
   srv::namedWindow("hls");
   srv::namedWindow("sobel_line");
 
