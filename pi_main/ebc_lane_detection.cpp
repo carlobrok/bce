@@ -16,15 +16,15 @@ int main() {
   CameraCapture cam(0);
   cam.set(cv::CAP_PROP_FPS, 30);			// Kamera Framerate auf 30 fps
 
-  //VideoServer srv;				// Klasse für den VideoServer
+  srv::init();				// Klasse für den VideoServer
 
-  srv.namedWindow("input image");
-	srv.namedWindow("sobel_line");
-	srv.namedWindow("warped");
-  srv.namedWindow("sobel_grad");
-  srv.namedWindow("sobel_thresholded_img");
-  srv.namedWindow("hls");
-  srv.namedWindow("sobel_line");
+  srv::namedWindow("input image");
+	srv::namedWindow("sobel_line");
+	srv::namedWindow("warped");
+  srv::namedWindow("sobel_grad");
+  srv::namedWindow("sobel_thresholded_img");
+  srv::namedWindow("hls");
+  srv::namedWindow("sobel_line");
 
   while(1) {
     cv::Mat bgr, warped, sobel_line, histogram;
@@ -34,7 +34,7 @@ int main() {
 // load image
     while(!cam.read(bgr)){}
     cv::resize(bgr, bgr, cv::Size(1000, 600));
-    srv.imshow("input image", bgr);
+    srv::imshow("input image", bgr);
 
     //TODO: distortion correction
 
@@ -45,7 +45,7 @@ int main() {
 
     // sobel filtering
     sobel_filtering(warped, sobel_line, 20, 255);
-    srv.imshow("sobel_line", sobel_line);
+    srv::imshow("sobel_line", sobel_line);
 
     // (IDEA more binary filtering)
 
@@ -85,10 +85,10 @@ int main() {
 
     draw_boxes(warped, left_boxes);
     draw_boxes(warped, right_boxes);
-    srv.imshow("warped", warped);
+    srv::imshow("warped", warped);
 
     // send/display video
-    //srv.imshow("histogram", histogram);
+    //srv::imshow("histogram", histogram);
 
   }
 

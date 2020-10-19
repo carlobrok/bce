@@ -43,14 +43,14 @@ void sobel_filtering(cv::Mat &warped, cv::Mat &sobel_line, int sobel_min, int so
 
   addWeighted(sobel_x, 0.5, sobel_y, 0.5, 0, sobel_grad);
 
-  srv.imshow("sobel_grad", sobel_grad);
+  srv::imshow("sobel_grad", sobel_grad);
   cv::inRange(sobel_grad, cv::Scalar(sobel_min), cv::Scalar(sobel_max), sobel_thresholded_img);
-  srv.imshow("sobel_thresholded_img", sobel_thresholded_img);
+  srv::imshow("sobel_thresholded_img", sobel_thresholded_img);
   //cv::threshold(sobel_grad, sobel_thresholded_img, sobel_threshold, 255, cv::THRESH_BINARY);
   cv::morphologyEx(sobel_thresholded_img, sobel_line, cv::MORPH_OPEN, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3,3)));
 
-  srv.imshow("hls", hls);
-  srv.imshow("sobel_line", sobel_line);
+  srv::imshow("hls", hls);
+  srv::imshow("sobel_line", sobel_line);
 }
 
 void sobel_abs_thresh(const cv::Mat &src, cv::Mat &dst, int dx, int dy, int thresh_min, int thresh_max, int kernel_size) {
@@ -66,7 +66,7 @@ void sobel_abs_thresh(const cv::Mat &src, cv::Mat &dst, int dx, int dy, int thre
 void lane_histogram(cv::Mat &line, cv::Mat &histogram, int cropped_height) {
   // only use lower half of the image
   cv::Mat cropped = line(cv::Rect(0, line.rows - cropped_height, line.cols, cropped_height));
-  //srv.imshow("cropped", cropped);
+  //srv::imshow("cropped", cropped);
   // generate histogram of the cropped image
   cv::reduce(cropped / 255, histogram, 0, cv::REDUCE_SUM, CV_32S);
   return;
