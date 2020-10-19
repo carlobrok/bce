@@ -33,7 +33,8 @@ int main() {
 
 // load image
     while(!cam.read(bgr)){}
-    cv::resize(bgr, bgr, cv::Size(1000, 600));
+    //cv::resize(bgr, bgr, cv::Size(1000, 600));
+    cv::GaussianBlur(bgr, bgr, cv::Size(5,5),2,2);		// Gaussian blur to normalize image
     srv::imshow("input image", bgr);
 
     //TODO: distortion correction
