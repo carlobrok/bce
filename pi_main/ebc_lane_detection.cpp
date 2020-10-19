@@ -11,32 +11,26 @@
 #include <string>
 #include <vector>
 
-const int num_images = 11;
-//std::string images[num_images] = {};
-
 int main() {
 
-  cv::Mat loaded_imaes[num_images];
+  CameraCapture cam(0);
+  cam.set(cv::CAP_PROP_FPS, 30);			// Kamera Framerate auf 30 fps
 
-  for(int i = 0; i < num_images; i++) {
-    std::string cur_image_path = std::string("../pi_main/media/test") + std::to_string(i+1) + std::string(".jpg");
-    loaded_imaes[i] = cv::imread(cur_image_path);
-  }
-  int image_index = 0;
+  VideoServer srv;				// Klasse für den VideoServer
 
+  srv.namedWindow("input image");
+	srv.namedWindow("sobel_line");
+	srv.namedWindow("warped");
 
   do {
     cv::Mat bgr, warped, sobel_line, histogram;
 
-    if (++image_index >= num_images)
-      image_index = 0;
-
 // ======== image processing pipeline ========
 
 // load image
-    bgr = loaded_imaes[image_index];
+    while(!cam.read(bgr)){}
     cv::resize(bgr, bgr, cv::Size(1000, 600));
-    cv::imshow("input image", bgr);
+    srv.imshow("input image", bgr);
 
     //TODO: distortion correction
 
@@ -47,7 +41,7 @@ int main() {
 
     // sobel filtering
     sobel_filtering(warped, sobel_line, 20, 255);
-    cv::imshow("sobel_line", sobel_line);
+    srv.imshow("sobel_line", sobel_line);
 
     // (IDEA more binary filtering)
 
@@ -87,10 +81,10 @@ int main() {
 
     draw_boxes(warped, left_boxes);
     draw_boxes(warped, right_boxes);
-    cv::imshow("warped", warped);
+    srv.imshow("warped", warped);
 
     // send/display video
-    //cv::imshow("histogram", histogram);
+    //srv.imshow("histogram", histogram);
 
 
   } while(cv::waitKey(0) != 'q');
