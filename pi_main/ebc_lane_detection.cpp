@@ -22,7 +22,7 @@ int main() {
 	srv.namedWindow("sobel_line");
 	srv.namedWindow("warped");
 
-  do {
+  while(1) {
     cv::Mat bgr, warped, sobel_line, histogram;
 
 // ======== image processing pipeline ========
@@ -86,8 +86,7 @@ int main() {
     // send/display video
     //srv.imshow("histogram", histogram);
 
-
-  } while(cv::waitKey(0) != 'q');
+  }
 
   return 0;
 }
