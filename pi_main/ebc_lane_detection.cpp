@@ -16,7 +16,7 @@ int main() {
   CameraCapture cam(0);
   cam.set(cv::CAP_PROP_FPS, 30);			// Kamera Framerate auf 30 fps
 
-  VideoServer srv;				// Klasse für den VideoServer
+  //VideoServer srv;				// Klasse für den VideoServer
 
   srv.namedWindow("input image");
 	srv.namedWindow("sobel_line");

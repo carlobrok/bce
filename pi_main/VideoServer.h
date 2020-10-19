@@ -19,7 +19,7 @@
 
 using boost::asio::ip::tcp;
 
-class VideoServer {
+static class VideoServer {
 public:
 	VideoServer(bool l_asyncSend = false);
 	virtual ~VideoServer();
@@ -53,6 +53,6 @@ private:
 	std::thread m_runThread;
 	std::mutex m_workQueueMutex;
 
-};
+} srv;
 
 #endif /* VIDEOSERVER_H_ */
