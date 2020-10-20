@@ -55,10 +55,14 @@ int main() {
 
     // perspective_warp
     perspective_warp(bgr, warped);
+    auto tpersp_warp = std::chrono::system_clock::now();
+    std::cout << "perspective_warp: " << std::chrono::duration_cast<std::chrono::milliseconds>(tpersp_warp - timg_read).count() << "ms" << std::endl;
 
     // sobel filtering
     sobel_filtering(warped, sobel_line, 20, 255);
     srv::imshow("sobel_line", sobel_line);
+    auto tsobel = std::chrono::system_clock::now();
+    std::cout << "sobel: " << std::chrono::duration_cast<std::chrono::milliseconds>(tsobel - tpersp_warp).count() << "ms" << std::endl;
 
     // (IDEA more binary filtering)
 
