@@ -70,7 +70,7 @@ namespace srv {
 			m_windowMap.insert(std::make_pair(f_windowName, l_tmpWindow));
 		}
 		else{
-			std::cout << "Window already exists!" << std::endl;
+			std::cout << "Window " << f_windowName << " already exists!" << std::endl;
 		}
 	}
 
@@ -89,7 +89,7 @@ namespace srv {
 			}
 		}
 		else{
-			std::cout << "ERROR: Window not found!" << std::endl;
+			std::cout << "ERROR: Window " << f_windowName << " not found!" << std::endl;
 		}
 	}
 
