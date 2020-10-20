@@ -111,8 +111,8 @@ int main() {
     //srv::imshow("histogram", histogram);
 
     auto tend = std::chrono::system_clock::now();
-
-    std::cout << "whole proc: " << std::chrono::duration_cast<std::chrono::milliseconds>(tend - tstart).count() << "ms" << std::endl;
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(tend - tstart).count();
+    std::cout << "whole proc: " << ms << "ms  / " << 1000 / ms << "fps" <<  std::endl;
 
   }
 
