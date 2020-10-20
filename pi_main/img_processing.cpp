@@ -45,7 +45,7 @@ void sobel_filtering(cv::Mat &warped, cv::Mat &sobel_line, int sobel_min, int so
 
   srv::imshow("sobel_grad", sobel_grad);
   cv::inRange(sobel_grad, cv::Scalar(sobel_min), cv::Scalar(sobel_max), sobel_thresholded_img);
-  srv::imshow("sobel_thresholded_img", sobel_thresholded_img);
+  srv::imshow("sobel_thresh", sobel_thresholded_img);
   //cv::threshold(sobel_grad, sobel_thresholded_img, sobel_threshold, 255, cv::THRESH_BINARY);
   cv::morphologyEx(sobel_thresholded_img, sobel_line, cv::MORPH_OPEN, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3,3)));
 

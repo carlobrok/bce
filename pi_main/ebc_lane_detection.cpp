@@ -26,7 +26,6 @@ int main() {
   srv::init(true);				// Klasse für den VideoServer
 
   srv::namedWindow("input image");
-	srv::namedWindow("sobel_line");
 	srv::namedWindow("warped");
   srv::namedWindow("sobel_grad");
   srv::namedWindow("sobel_thresh");
