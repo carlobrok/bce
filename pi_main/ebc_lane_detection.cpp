@@ -11,12 +11,17 @@
 #include <string>
 #include <vector>
 
+#include <chrono>
+#include <thread>
+
+
 int main() {
 
   CameraCapture cam(0);
-  cam.set(cv::CAP_PROP_FPS, 30);			// Kamera Framerate auf 30 fps
+  std::this_thread::sleep_for(std::chrono::milliseconds(10));
   cam.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
   cam.set(cv::CAP_PROP_FRAME_HEIGHT, 720);
+  cam.set(cv::CAP_PROP_FPS, 30);			// Kamera Framerate auf 30 fps
 
   srv::init(true);				// Klasse für den VideoServer
 
