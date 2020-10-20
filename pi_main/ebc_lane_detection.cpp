@@ -29,6 +29,9 @@ int main() {
   srv::namedWindow("sobel_line");
 
   while(1) {
+
+    auto tstart = std::chrono::system_clock::now();
+
     cv::Mat bgr, warped, sobel_line, histogram;
 
 // ======== image processing pipeline ========
@@ -92,6 +95,10 @@ int main() {
 
     // send/display video
     //srv::imshow("histogram", histogram);
+
+    auto tend = std::chrono::system_clock::now();
+
+    std::cout << "img proc time: " << std::chrono::duration_cast<std::chrono::milliseconds>(tend - tstart).count() << "ms" << std::endl;
 
   }
 
