@@ -114,6 +114,7 @@ int main() {
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(tend - tstart).count();
     std::cout << "whole proc: " << ms << "ms  / " << 1000 / ms << "fps" <<  std::endl;
 
+    std::cout << "-------------------------------" << std::endl;
   }
 
   return 0;
