@@ -33,20 +33,22 @@ int main() {
   srv::namedWindow("hls");
   srv::namedWindow("sobel_line");
 
+  cv::Mat bgr, warped, sobel_line, histogram;
   while(1) {
 
     auto tstart = std::chrono::system_clock::now();
 
-    cv::Mat bgr, warped, sobel_line, histogram;
-
 // ======== image processing pipeline ========
 
 // load image
+
     while(!cam.read(bgr)){}
     //cv::resize(bgr, bgr, cv::Size(1000, 600));
     cv::GaussianBlur(bgr, bgr, cv::Size(5,5),2,2);		// Gaussian blur to normalize image
     srv::imshow("input image", bgr);
 
+    auto timg_read = std::chrono::system_clock::now();
+    std::cout << "image read: " << std::chrono::duration_cast<std::chrono::milliseconds>(timg_read - tstart).count() << "ms" << std::endl;
     //TODO: distortion correction
 
 // generate binary:
@@ -62,6 +64,8 @@ int main() {
 
     // histogram peak detection
     lane_histogram(sobel_line, histogram, sobel_line.rows/2);
+    auto tbin_img = std::chrono::system_clock::now();
+    std::cout << "generate binary: " << std::chrono::duration_cast<std::chrono::milliseconds>(tbin_img - timg_read).count() << "ms" << std::endl;
 
 // calculate lines:
     // window search
@@ -73,6 +77,8 @@ int main() {
     std::vector<cv::Point> midpoints;
     calc_midpoints(left_boxes, right_boxes, midpoints);
 
+    auto tline_calc = std::chrono::system_clock::now();
+    std::cout << "calculate lines: " << std::chrono::duration_cast<std::chrono::milliseconds>(tline_calc - tbin_img).count() << "ms" << std::endl;
 // ========= autonomous driving ========
 
     // calculate speed from midpoints
@@ -103,7 +109,7 @@ int main() {
 
     auto tend = std::chrono::system_clock::now();
 
-    std::cout << "img proc time: " << std::chrono::duration_cast<std::chrono::milliseconds>(tend - tstart).count() << "ms" << std::endl;
+    std::cout << "whole proc: " << std::chrono::duration_cast<std::chrono::milliseconds>(tend - tstart).count() << "ms" << std::endl;
 
   }
 
