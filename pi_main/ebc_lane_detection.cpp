@@ -100,7 +100,12 @@ int main() {
 
     // TODO if no obstacles send speed and steering to arduino
 
-    std::cout << "send data: " << mot::set_dir_pwm_steer(mot::FORWARD, speed, angle) << std::endl;
+    int e = mot::set_dir_pwm_steer(mot::FORWARD, speed, angle);
+    if(e < 0) {
+      std::cout << "Error sending i2c data: " << strerror(errno) << std::endl;
+    } else {
+      std::cout << "Successfully sent i2c data" << std::endl;
+    }
 
 // output images:
 
