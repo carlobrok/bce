@@ -32,6 +32,8 @@ int main() {
   srv::namedWindow("hls");
   srv::namedWindow("sobel_line");
 
+  init_arduino(0x08);
+
   cv::Mat bgr, warped, sobel_line, histogram;
   while(1) {
 
