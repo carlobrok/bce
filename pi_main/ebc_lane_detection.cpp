@@ -100,7 +100,7 @@ int main() {
 
     // TODO if no obstacles send speed and steering to arduino
 
-    mot::set_dir_pwm_steer(mot::FORWARD, speed, angle);
+    std::cout << "send data: " << mot::set_dir_pwm_steer(mot::FORWARD, speed, angle) << std::endl;
 
 // output images:
 
