@@ -88,10 +88,29 @@ bool send_req(uint8_t (&data)[N], last_values<N> &l_data) {
 }
 
 last_values<2> last_dir_pwm;
-int mot::set(uint8_t direction, uint8_t pwm) {
+int mot::set_dir_pwm(uint8_t direction, uint8_t pwm) {
   uint8_t data[2] = {direction, pwm};
 	if(send_req(data, last_dir_pwm))
 		return i2c_smbus_write_block_data(arduino_fd, SET_DIR_PWM, 2, data);
+	else
+		return 0;
+}
+
+last_values<3> last_dir_pwm_steer;
+int mot::set_dir_pwm_steer(uint8_t direction, uint8_t pwm, int angle) {
+  // normalize angle
+  if(angle < -100) {
+    angle = -100;
+  } else if(angle > 100) {
+    angle = 100;
+  }
+  // shift range from [-100 - 100]  to  [0 - 200]
+  angle += 100;
+
+  uint8_t data[3] = {direction, pwm, (uint8_t) angle};
+
+  if(send_req(data, last_dir_pwm_steer))
+		return i2c_smbus_write_block_data(arduino_fd, SET_DIR_PWM_STEER, 3, data);
 	else
 		return 0;
 }

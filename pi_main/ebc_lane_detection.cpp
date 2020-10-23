@@ -91,6 +91,7 @@ int main() {
     double angle = calc_angle(warped, midpoints, true);
 
     std::cout << "speed, angle: " << speed << ", " << angle << std::endl;
+
     // TODO request for obstacles/state - hande them
 
       // if no ground pause until ground available:
@@ -98,6 +99,8 @@ int main() {
           // continue;
 
     // TODO if no obstacles send speed and steering to arduino
+
+    mot::set_dir_pwm_steer(mot::FORWARD, speed, angle);
 
 // output images:
 
