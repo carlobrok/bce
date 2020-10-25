@@ -17,13 +17,14 @@
 
 int main() {
 
+  srv::init(true);				// Klasse für den VideoServer
+
   CameraCapture cam(0);
   std::this_thread::sleep_for(std::chrono::milliseconds(10));
   //cam.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
   //cam.set(cv::CAP_PROP_FRAME_HEIGHT, 720);
   cam.set(cv::CAP_PROP_FPS, 30);			// Kamera Framerate auf 30 fps
 
-  srv::init(true);				// Klasse für den VideoServer
 
   srv::namedWindow("input image");
 	srv::namedWindow("warped");
