@@ -38,7 +38,7 @@ int main() {
   cv::Mat bgr, warped, sobel_line, histogram;
   while(1) {
 
-    static auto tstart = std::chrono::system_clock::now();
+    auto tstart = std::chrono::system_clock::now();
 
 // ======== image processing pipeline ========
 
@@ -49,7 +49,7 @@ int main() {
     cv::GaussianBlur(bgr, bgr, cv::Size(5,5),2,2);		// Gaussian blur to normalize image
     srv::imshow("input image", bgr);
 
-    static auto timg_read = std::chrono::system_clock::now();
+    auto timg_read = std::chrono::system_clock::now();
     std::cout << "image read: " << std::chrono::duration_cast<std::chrono::milliseconds>(timg_read - tstart).count() << "ms" << std::endl;
     //TODO: distortion correction
 
@@ -57,41 +57,41 @@ int main() {
 
     // perspective_warp
     perspective_warp(bgr, warped);
-    static auto tpersp_warp = std::chrono::system_clock::now();
+    auto tpersp_warp = std::chrono::system_clock::now();
     std::cout << "perspective_warp: " << std::chrono::duration_cast<std::chrono::milliseconds>(tpersp_warp - timg_read).count() << "ms" << std::endl;
 
     // sobel filtering
     sobel_filtering(warped, sobel_line, 20, 255);
     srv::imshow("sobel_line", sobel_line);
-    static auto tsobel = std::chrono::system_clock::now();
+    auto tsobel = std::chrono::system_clock::now();
     std::cout << "sobel: " << std::chrono::duration_cast<std::chrono::milliseconds>(tsobel - tpersp_warp).count() << "ms" << std::endl;
 
     // (IDEA more binary filtering)
 
     // histogram peak detection
     lane_histogram(sobel_line, histogram, sobel_line.rows/2);
-    static auto tbin_img = std::chrono::system_clock::now();
+    auto tbin_img = std::chrono::system_clock::now();
     std::cout << "generate binary: " << std::chrono::duration_cast<std::chrono::milliseconds>(tbin_img - timg_read).count() << "ms" << std::endl;
 
 // calculate lines:
     // window search
-    static std::vector<WindowBox> left_boxes, right_boxes;
+    std::vector<WindowBox> left_boxes, right_boxes;
     window_search(sobel_line, histogram, left_boxes, right_boxes, 12, 200);
 
     std::cout << "lbs " << left_boxes.size() << " rbs " << right_boxes.size() << std::endl;
 
-    static std::vector<cv::Point> midpoints;
+    std::vector<cv::Point> midpoints;
     calc_midpoints(left_boxes, right_boxes, midpoints);
 
-    static auto tline_calc = std::chrono::system_clock::now();
+    auto tline_calc = std::chrono::system_clock::now();
     std::cout << "calculate lines: " << std::chrono::duration_cast<std::chrono::milliseconds>(tline_calc - tbin_img).count() << "ms" << std::endl;
 // ========= autonomous driving ========
 
     // calculate speed from midpoints
-    static int speed = calc_speed(midpoints);
+    int speed = calc_speed(midpoints);
 
     // calculate steering
-    static double angle = calc_angle(warped, midpoints, true);
+    double angle = calc_angle(warped, midpoints, true);
 
     std::cout << "speed, angle: " << speed << ", " << angle << std::endl;
 
@@ -103,7 +103,7 @@ int main() {
 
     // TODO if no obstacles send speed and steering to arduino
 
-    static int e = mot::set_dir_pwm_steer(mot::FORWARD, speed, angle);
+    int e = mot::set_dir_pwm_steer(mot::FORWARD, speed, angle);
     if(e < 0) {
       std::cout << "Error sending i2c data: " << strerror(errno) << std::endl;
     } else {
