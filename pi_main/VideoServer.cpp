@@ -68,6 +68,7 @@ namespace srv {
 			l_tmpWindow.windowName = f_windowName;
 			l_tmpWindow.windowName.reserve(20);
 			m_windowMap.insert(std::make_pair(f_windowName, l_tmpWindow));
+			std::cout << "New window: " << f_windowName << std::endl;
 		}
 		else{
 			std::cout << "Window " << f_windowName << " already exists!" << std::endl;
