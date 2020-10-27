@@ -35,7 +35,7 @@ void calc_transform(cv::Mat & input) {
 
   cv::Mat preview;
   cv::Mat draw_image = input.clone();
-  
+
   warp_poly_points.clear();
   std::vector<cv::Point> src_points;
 
@@ -52,14 +52,14 @@ void calc_transform(cv::Mat & input) {
     if(warp_poly_points.size() == 4) {
       cv::Point2f src[4];     // warp_poly_points vector to array
       cv::Point2f dst[4] = {{0,0},{1,0},{0,1},{1,1}};
-      
+
       src_points = warp_poly_points;
 
       std::sort(src_points.begin(), src_points.end(), comp_y);
       std::sort(src_points.begin(), src_points.begin()+2, comp_x);
-      std::sort(src_points.begin()+2, src_points.end(), comp_x);  
-      
-      //std::cout << "sorted: " << src_points << std::endl; 
+      std::sort(src_points.begin()+2, src_points.end(), comp_x);
+
+      //std::cout << "sorted: " << src_points << std::endl;
 
       std::copy(src_points.begin(), src_points.end(), src);
 
@@ -86,4 +86,9 @@ void calc_transform(cv::Mat & input) {
   } while(!complete);
   cv::destroyWindow("preview");
   
+  for(auto & p : warp_poly_points) {
+    std::cout << "{" << p.x / input.cols << "," << p.y / input.rows << "}";
+    if (&p != &warp_poly_points.back()) std::cout << ",";
+  }
+  std::cout << std::endl;
 }
