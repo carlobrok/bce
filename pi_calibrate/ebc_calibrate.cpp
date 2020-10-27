@@ -17,9 +17,6 @@ int main(int argc, char *argv[]) {
 	}
 
 
-	//Erstelle cv::Mat für Eingabebild
-	cv::Mat img_rgb;
-
 	/////////
 	//Boost TCP Client
 	////////
@@ -57,7 +54,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-
+	cv::Mat img_rgb;
 	while(1){
 		auto t1 = cv::getTickCount();
 		try{
@@ -77,18 +74,22 @@ int main(int argc, char *argv[]) {
 			img_buf.resize(sz);
 			boost::asio::read(socket, boost::asio::buffer(img_buf.data(), sz));
 			int64 t1 = cv::getTickCount();
-			cv::Mat img_rgb = cv::imdecode(img_buf, 1);
+			cv::Mat input = cv::imdecode(img_buf, 1);
 			int64 t2 = cv::getTickCount();
 
 			std::cout << "Decode took " << (t2-t1) / cv::getTickFrequency() * 1000.0 << " ";
 
-			//Zeige eingelesenes Bild "img_rgb" im Fenster "RGB" an
-			cv::imshow(name, img_rgb);
+			//Zeige eingelesenes Bild "input" im Fenster "RGB" an
+
+			if(name == "input image") {
+				cv::imshow(name, input);
+				img_rgb = input;
+			}
 
 			auto k = cv::waitKey(1);
-      if(k == 'c') {
-        calc_transform(img_rgb);
-      }
+			if(k == 'c' && !img_rgb.empty()) {
+				calc_transform(img_rgb);
+			}
 		}
 		catch(std::exception & e){
 			std::cerr << e.what() << std::endl;
@@ -96,7 +97,7 @@ int main(int argc, char *argv[]) {
 			socket.close();
 			cv::destroyAllWindows();
 
-      bool connected = false;
+      		bool connected = false;
 			while(!connected){
 				try{
 					socket.connect(endpoint);
