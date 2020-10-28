@@ -70,6 +70,9 @@ void loop() {
   }
 }
 
+// gibt die gemessene distanz des jeweiligen Ultraschall sensors in cm zurück.
+// @param trigger_pin: digitaler Triggerpin des Arduinos
+
 float get_distance(int trigger_pin, int echo_pin, int max_cm) {
   digitalWrite(trigger_pin, LOW);
   delayMicroseconds(2);
