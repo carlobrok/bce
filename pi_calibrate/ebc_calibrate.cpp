@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 
 	cv::Mat img_rgb;
 	while(1){
-		auto t1 = cv::getTickCount();
+		//auto t1 = cv::getTickCount();
 		try{
 			uint32_t sz;
 			boost::asio::read(socket, boost::asio::buffer(&sz, sizeof(sz)));
@@ -73,11 +73,11 @@ int main(int argc, char *argv[]) {
 			std::vector<uchar> img_buf;
 			img_buf.resize(sz);
 			boost::asio::read(socket, boost::asio::buffer(img_buf.data(), sz));
-			int64 t1 = cv::getTickCount();
+			//int64 t1 = cv::getTickCount();
 			cv::Mat input = cv::imdecode(img_buf, 1);
-			int64 t2 = cv::getTickCount();
+			//int64 t2 = cv::getTickCount();
 
-			std::cout << "Decode took " << (t2-t1) / cv::getTickFrequency() * 1000.0 << " ";
+			//std::cout << "Decode took " << (t2-t1) / cv::getTickFrequency() * 1000.0 << " ";
 
 			//Zeige eingelesenes Bild "input" im Fenster "RGB" an
 
@@ -109,8 +109,8 @@ int main(int argc, char *argv[]) {
 				}
 			}
 		}
-		auto t2 = cv::getTickCount();
-		std::cout << "FPS: " << 1/((t2-t1)/cv::getTickFrequency()) << "\r" << std::flush;
+		/*auto t2 = cv::getTickCount();
+		std::cout << "FPS: " << 1/((t2-t1)/cv::getTickFrequency()) << "\r" << std::flush;*/
 	}
 
 

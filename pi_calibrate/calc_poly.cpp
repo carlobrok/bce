@@ -85,9 +85,11 @@ void calc_transform(cv::Mat & input) {
     }
   } while(!complete);
   cv::destroyWindow("preview");
-  
+
+  std::cout << std::fixed << std::setprecision(2);
+
   for(auto & p : warp_poly_points) {
-    std::cout << "{" << p.x / input.cols << "," << p.y / input.rows << "}";
+    std::cout << "{" << (float) p.x / input.cols << "," << (float) p.y / input.rows << "}";
     if (&p != &warp_poly_points.back()) std::cout << ",";
   }
   std::cout << std::endl;
