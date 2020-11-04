@@ -24,6 +24,15 @@ void perspective_warp(cv::Mat &input, cv::Mat &warped) {
   cv::warpPerspective(input, warped, M, cv::Size(input.cols, input.rows), cv::INTER_LINEAR, cv::BORDER_REPLICATE);
 }
 
+void color_filtering(cv::Mat &warped, cv::Mat &binary_line, cv::Scalar min, cv::Scalar max) {
+  // Filter image and convert to hsv
+  cv::Mat hsv;
+  cv::cvtColor(warped, hsv, cv::COLOR_BGR2HSV);			// Convert to HSV and save in Mat hsv
+  srv::imshow("hsv", hsv);
+  cv::inRange(hsv, min, max, binary_line);
+	cv::morphologyEx(binary_line, binary_line, cv::MORPH_OPEN, cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3,3)));
+  srv::imshow("color_thresh", binary_line);
+}
 
 // input Mat: warped rgb image of lines
 // output Mat: binary of all edges in the image (hopefully just lines)
