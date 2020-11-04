@@ -11,48 +11,67 @@
 #include <string>
 #include <vector>
 
-const int num_images = 11;
-//std::string images[num_images] = {};
+#include <chrono>
+#include <thread>
+
 
 int main() {
 
-  cv::Mat loaded_imaes[num_images];
+  srv::init(true);				// Klasse für den VideoServer
 
-  for(int i = 0; i < num_images; i++) {
-    std::string cur_image_path = std::string("../pi_main/media/test") + std::to_string(i+1) + std::string(".jpg");
-    loaded_imaes[i] = cv::imread(cur_image_path);
-  }
-  int image_index = 0;
+  CameraCapture cam(0);
+  std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  //cam.set(cv::CAP_PROP_FRAME_WIDTH, 1280);
+  //cam.set(cv::CAP_PROP_FRAME_HEIGHT, 720);
+  cam.set(cv::CAP_PROP_FPS, 30);			// Kamera Framerate auf 30 fps
 
 
-  do {
-    cv::Mat bgr, warped, sobel_line, histogram;
+  srv::namedWindow("input image");
+	srv::namedWindow("warped");
+  srv::namedWindow("sobel_grad");
+  srv::namedWindow("sobel_thresh");
+  srv::namedWindow("hls");
+  srv::namedWindow("sobel_line");
 
-    if (++image_index >= num_images)
-      image_index = 0;
+  init_arduino(0x08);
+
+  cv::Mat bgr, warped, sobel_line, histogram;
+  while(1) {
+
+    auto tstart = std::chrono::system_clock::now();
 
 // ======== image processing pipeline ========
 
 // load image
-    bgr = loaded_imaes[image_index];
-    cv::resize(bgr, bgr, cv::Size(1000, 600));
-    cv::imshow("input image", bgr);
 
+    while(!cam.read(bgr)){}
+    //cv::resize(bgr, bgr, cv::Size(1000, 600));
+    cv::GaussianBlur(bgr, bgr, cv::Size(5,5),2,2);		// Gaussian blur to normalize image
+    srv::imshow("input image", bgr);
+
+    auto timg_read = std::chrono::system_clock::now();
+    std::cout << "image read: " << std::chrono::duration_cast<std::chrono::milliseconds>(timg_read - tstart).count() << "ms" << std::endl;
     //TODO: distortion correction
 
 // generate binary:
 
     // perspective_warp
     perspective_warp(bgr, warped);
+    auto tpersp_warp = std::chrono::system_clock::now();
+    std::cout << "perspective_warp: " << std::chrono::duration_cast<std::chrono::milliseconds>(tpersp_warp - timg_read).count() << "ms" << std::endl;
 
     // sobel filtering
     sobel_filtering(warped, sobel_line, 20, 255);
-    cv::imshow("sobel_line", sobel_line);
+    srv::imshow("sobel_line", sobel_line);
+    auto tsobel = std::chrono::system_clock::now();
+    std::cout << "sobel: " << std::chrono::duration_cast<std::chrono::milliseconds>(tsobel - tpersp_warp).count() << "ms" << std::endl;
 
     // (IDEA more binary filtering)
 
     // histogram peak detection
     lane_histogram(sobel_line, histogram, sobel_line.rows/2);
+    auto tbin_img = std::chrono::system_clock::now();
+    std::cout << "generate binary: " << std::chrono::duration_cast<std::chrono::milliseconds>(tbin_img - timg_read).count() << "ms" << std::endl;
 
 // calculate lines:
     // window search
@@ -64,6 +83,8 @@ int main() {
     std::vector<cv::Point> midpoints;
     calc_midpoints(left_boxes, right_boxes, midpoints);
 
+    auto tline_calc = std::chrono::system_clock::now();
+    std::cout << "calculate lines: " << std::chrono::duration_cast<std::chrono::milliseconds>(tline_calc - tbin_img).count() << "ms" << std::endl;
 // ========= autonomous driving ========
 
     // calculate speed from midpoints
@@ -73,6 +94,7 @@ int main() {
     double angle = calc_angle(warped, midpoints, true);
 
     std::cout << "speed, angle: " << speed << ", " << angle << std::endl;
+
     // TODO request for obstacles/state - hande them
 
       // if no ground pause until ground available:
@@ -81,19 +103,30 @@ int main() {
 
     // TODO if no obstacles send speed and steering to arduino
 
+    int e = mot::set_dir_pwm_steer(mot::FORWARD, speed, angle);
+    if(e < 0) {
+      std::cout << "Error sending i2c data: " << strerror(errno) << std::endl;
+    } else {
+      std::cout << "Successfully sent i2c data" << std::endl;
+    }
+
 // output images:
 
     // TODO draw overlay
 
     draw_boxes(warped, left_boxes);
     draw_boxes(warped, right_boxes);
-    cv::imshow("warped", warped);
+    srv::imshow("warped", warped);
 
     // send/display video
-    //cv::imshow("histogram", histogram);
+    //srv::imshow("histogram", histogram);
 
+    auto tend = std::chrono::system_clock::now();
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(tend - tstart).count();
+    std::cout << "whole proc: " << ms << "ms  / " << 1000 / ms << "fps" <<  std::endl;
 
-  } while(cv::waitKey(0) != 'q');
+    std::cout << "-------------------------------" << std::endl;
+  }
 
   return 0;
 }

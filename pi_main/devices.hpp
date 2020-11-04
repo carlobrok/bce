@@ -24,8 +24,8 @@ namespace mot {
 
   // direction send by
   enum direction {
-    MOTOR_FORWARD,
-    MOTOR_BACKWARD
+    FORWARD,
+    BACKWARD
   };
 
   // states returned by get_state.
@@ -37,12 +37,14 @@ namespace mot {
     OFF_OBSTACLE    // read only
   };
 
-  int set(uint8_t direction, uint8_t pwm);
+  int servo(int angle);
+
+  int set_dir_pwm(uint8_t direction, uint8_t pwm);
+  int set_dir_pwm_steer(uint8_t direction, uint8_t pwm, int angle);  
 
   int set_state(uint8_t state);
   int get_state();
 
-  int servo(int angle);
 
 }	// namespace mot
 
