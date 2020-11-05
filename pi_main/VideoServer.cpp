@@ -40,7 +40,7 @@ namespace srv {
 		m_readyForData = true;
 
 		m_jpegParams.push_back(cv::ImwriteFlags::IMWRITE_JPEG_QUALITY);
-		m_jpegParams.push_back(80);
+		m_jpegParams.push_back(90);
 
 		m_runThread = std::thread(run);
 		m_runThread.detach();
