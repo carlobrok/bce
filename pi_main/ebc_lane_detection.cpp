@@ -65,7 +65,7 @@ int main() {
 
 
     // color filtering
-    color_filtering(warped, binary_line, cv::Scalar(108,130,121), cv::Scalar(190, 205, 126));
+    color_filtering(warped, binary_line, cv::Scalar(121,130,119), cv::Scalar(126, 207, 191));
     srv::imshow("binary_line", binary_line);
     auto tcolor = std::chrono::system_clock::now();
     std::cout << "color filtering: " << std::chrono::duration_cast<std::chrono::milliseconds>(tcolor - tpersp_warp).count() << "ms" << std::endl;
