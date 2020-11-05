@@ -12,9 +12,10 @@ int calc_speed (std::vector<cv::Point> & midpoints) {
 
   // (midpoints.size()-1) in for loop would be 4 billion.. sth if midpoints.size() equals 0
   if (midpoints.size() < 2){
+    std::cout << "abort" << std::endl;
     return min_speed;
   }
-
+  std::cout << "no abort" << std::endl;
   for(int i = 0; i < (int)midpoints.size()-1; i++) {
     abs_diff += abs(midpoints[i].x - midpoints[i+1].x);
   }
