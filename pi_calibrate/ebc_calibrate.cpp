@@ -8,6 +8,20 @@
 #include <iostream>
 
 
+bool connect(boost::asio::ip::tcp::socket & socket, boost::asio::ip::tcp::endpoint & endpoint) {
+		try{
+      std::cout << "Connect to " << endpoint << " " << std::flush;
+			socket.connect(endpoint);
+      std::cout << "Connected." << std::endl;
+      return true;
+		}
+		catch(std::exception & e){
+			std::cout << "Failed, trying to reconnect." << std::endl;
+			return false;
+		}
+}
+
+
 int main(int argc, char *argv[]) {
 
   if(argc != 2){
@@ -40,19 +54,9 @@ int main(int argc, char *argv[]) {
   // socket to pi server
 	boost::asio::ip::tcp::socket socket(ios);
 
-	bool connected = false;
-	while(!connected){
-		try{
-      std::cout << "Connect to " << endpoint << " " << std::flush;
-			socket.connect(endpoint);
-			connected = true;
-      std::cout << "Connected." << std::endl;
-		}
-		catch(std::exception & e){
-			std::cout << "Failed, trying to reconnect." << std::endl;
-			std::this_thread::sleep_for (std::chrono::seconds(5));
-		}
-	}
+  while(!connect(socket, endpoint)) {
+    std::this_thread::sleep_for (std::chrono::seconds(5));
+  }
 
 	cv::Mat img_rgb;
 	while(1){
@@ -97,17 +101,9 @@ int main(int argc, char *argv[]) {
 			socket.close();
 			cv::destroyAllWindows();
 
-      		bool connected = false;
-			while(!connected){
-				try{
-					socket.connect(endpoint);
-					connected = true;
-				}
-				catch(std::exception & e){
-					std::cout << "No server" << std::endl;
-					std::this_thread::sleep_for (std::chrono::seconds(1));
-				}
-			}
+      while(!connect(socket, endpoint)) {
+        std::this_thread::sleep_for (std::chrono::seconds(1));
+      }
 		}
 		/*auto t2 = cv::getTickCount();
 		std::cout << "FPS: " << 1/((t2-t1)/cv::getTickFrequency()) << "\r" << std::flush;*/
