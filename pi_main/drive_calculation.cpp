@@ -9,7 +9,7 @@ int calc_speed (std::vector<cv::Point> & midpoints) {
 
   int abs_diff = 0;
   std::cout << midpoints.size() << std::endl;
-  for(size_t i = 0; i < midpoints.size()-1; i++) {
+  for(int i = 0; i < midpoints.size()-1; i++) {
     abs_diff += abs(midpoints[i].x - midpoints[i+1].x);
   }
   std::cout << abs_diff << std::endl;
