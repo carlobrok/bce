@@ -93,8 +93,9 @@ int main() {
     std::cout << "lbs " << left_boxes.size() << " rbs " << right_boxes.size() << std::endl;
 
     std::vector<cv::Point> midpoints;
+    midpoints.reserve(12);
     calc_midpoints(left_boxes, right_boxes, midpoints);
-
+    std::cout << "midpoints: " << midpoints.size() << std::cout;
     auto tline_calc = std::chrono::system_clock::now();
     std::cout << "calculate lines: " << std::chrono::duration_cast<std::chrono::milliseconds>(tline_calc - tbin_img).count() << "ms" << std::endl;
 // ========= autonomous driving ========
@@ -102,7 +103,7 @@ int main() {
     // calculate speed from midpoints
     int speed = calc_speed(midpoints);
     std::cout << speed << std::endl;
-    
+
     // calculate steering
     double angle = calc_angle(warped, midpoints, true);
 
