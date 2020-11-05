@@ -11,6 +11,9 @@ int calc_speed (std::vector<cv::Point> & midpoints) {
   for(size_t i = 0; i < midpoints.size()-1; i++) {
     abs_diff += abs(midpoints[i].x - midpoints[i+1].x);
   }
+
+  if (abs_diff == 0) return min_speed; // abort if midpoints.size()
+
   int speed = min_speed + k_speed / abs_diff;
   return (speed > 255) ? 255 : speed;
 }
