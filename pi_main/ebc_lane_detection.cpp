@@ -83,7 +83,7 @@ int main() {
     // histogram peak detection
     lane_histogram(binary_line, histogram, binary_line.rows/2);
     auto tbin_img = std::chrono::system_clock::now();
-    std::cout << "generate binary: " << std::chrono::duration_cast<std::chrono::milliseconds>(tbin_img - timg_read).count() << "ms" << std::endl;
+    std::cout << "generate binary: " << std::chrono::duration_cast<std::chrono::milliseconds>(tbin_img - tcolor).count() << "ms" << std::endl;
 
 // calculate lines:
     // window search
