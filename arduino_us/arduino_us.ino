@@ -20,6 +20,10 @@ String liUnName = "LiUn";
 String reObName = "ReOb";
 String liObName = "LiOb";
 
+String value[3];
+
+unsigned long tdistance;
+
 UltrasonicSensor UsLiOb(liObTrig, liObEch, liObName);
 UltrasonicSensor UsReOb(reObTrig, reObEch, reObName);
 UltrasonicSensor UsLiUn(liUnTrig, liUnEch, liUnName);
@@ -32,6 +36,7 @@ String str_out = "";
 
 const int buzzer_pin = 5;
 unsigned long last_buzzer = 0;
+
 
 void usSenCheck(double distance)
 {
@@ -48,6 +53,7 @@ void usSenCheck(double distance)
   {
     Serial.println("timeout");
   }
+  tdistance = distance;
 }
 
 void setup() {
@@ -57,10 +63,17 @@ void setup() {
 void loop() {
 // read distances of ultrasonic sensors
   usSenCheck(UsReOb.distance()); 
+  value[0] = tdistance;
   usSenCheck(UsLiOb.distance());
+  value[1] = tdistance;
   usSenCheck(UsReUn.distance());
+  value[2] = tdistance;
   usSenCheck(UsLiUn.distance());
+  value[3] = tdistance;
 // write distances to serial port
+  
+  Serial.print(value[0]+";"+value[1]+";"+value[2]+"3"+value[3]+"\n");
+  
   /*str_out = String(dist_l,1) + ";" + String(dist_lm,1) + ";" + String(dist_rm,1) + ";" + String(dist_r,1);
   Serial.println(str_out);*/
 
