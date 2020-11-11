@@ -65,7 +65,7 @@ int main() {
 
 
     // color filtering
-    color_filtering(warped, binary_line, cv::Scalar(), cv::Scalar());
+    color_filtering(warped, binary_line, cv::Scalar(115,170,105), cv::Scalar(193, 207, 191));
     srv::imshow("binary_line", binary_line);
     auto tcolor = std::chrono::system_clock::now();
     std::cout << "color filtering: " << std::chrono::duration_cast<std::chrono::milliseconds>(tcolor - tpersp_warp).count() << "ms" << std::endl;
@@ -93,14 +93,16 @@ int main() {
     std::cout << "lbs " << left_boxes.size() << " rbs " << right_boxes.size() << std::endl;
 
     std::vector<cv::Point> midpoints;
+    midpoints.reserve(12);
     calc_midpoints(left_boxes, right_boxes, midpoints);
-
+    std::cout << "midpoints: " << midpoints.size() << std::endl;
     auto tline_calc = std::chrono::system_clock::now();
     std::cout << "calculate lines: " << std::chrono::duration_cast<std::chrono::milliseconds>(tline_calc - tbin_img).count() << "ms" << std::endl;
 // ========= autonomous driving ========
 
     // calculate speed from midpoints
     int speed = calc_speed(midpoints);
+    std::cout << speed << std::endl;
 
     // calculate steering
     double angle = calc_angle(warped, midpoints, true);
