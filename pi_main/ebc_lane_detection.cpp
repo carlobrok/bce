@@ -26,7 +26,7 @@ int main() {
 
 
   srv::namedWindow("input image");
-  srv::namedWindow("warped");
+  //srv::namedWindow("warped");
   srv::namedWindow("binary_line");
   // only for color filtering
   srv::namedWindow("hsv");
@@ -38,9 +38,9 @@ int main() {
 
   init_arduino(0x08);
 
-  cv::Mat bgr, warped, binary_line, histogram;
-  while(!cam.read(bgr)){}
+  cv::Mat bgr, /*warped,*/ binary_line, histogram;
 
+  //while(!cam.read(bgr)){}
   //cv::Mat transform_M = transform_matrix(bgr.size());
 
   while(1) {
@@ -54,7 +54,6 @@ int main() {
     while(!cam.read(bgr)){}
     //cv::resize(bgr, bgr, cv::Size(1000, 600));
     cv::GaussianBlur(bgr, bgr, cv::Size(5,5),2,2);		// Gaussian blur to normalize image
-    srv::imshow("input image", bgr);
 
     auto timg_read = std::chrono::system_clock::now();
     std::cout << "image read: " << std::chrono::duration_cast<std::chrono::milliseconds>(timg_read - tstart).count() << "ms" << std::endl;
@@ -109,7 +108,7 @@ int main() {
     std::cout << speed << std::endl;
 
     // calculate steering
-    double angle = calc_angle(warped, midpoints, true);
+    double angle = calc_angle(bgr, midpoints, true);
 
     std::cout << "speed, angle: " << speed << ", " << angle << std::endl;
 
@@ -132,9 +131,10 @@ int main() {
 
     // TODO draw overlay
 
-    draw_boxes(warped, left_boxes);
-    draw_boxes(warped, right_boxes);
-    srv::imshow("warped", warped);
+    draw_boxes(bgr, left_boxes);
+    draw_boxes(bgr, right_boxes);
+    //srv::imshow("warped", warped);
+    srv::imshow("input image", bgr);
 
     // send/display video
     //srv::imshow("histogram", histogram);
