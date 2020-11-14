@@ -16,8 +16,6 @@
 
 int main() {
 
-  std::cout << "OpenCV optimization: " << cv::useOptimized() << std::endl;
-
   srv::init(true);				// Klasse für den VideoServer
 
   CameraCapture cam(0);
@@ -43,7 +41,7 @@ int main() {
   cv::Mat bgr, warped, binary_line, histogram;
   while(!cam.read(bgr)){}
 
-  cv::Mat transform_M = transform_matrix(bgr.size());
+  //cv::Mat transform_M = transform_matrix(bgr.size());
 
   while(1) {
 
@@ -64,17 +62,17 @@ int main() {
 
 // generate binary:
 
-    // perspective_warp
+    /*// perspective_warp
     perspective_warp(bgr, warped, transform_M);
     auto tpersp_warp = std::chrono::system_clock::now();
     std::cout << "perspective_warp: " << std::chrono::duration_cast<std::chrono::milliseconds>(tpersp_warp - timg_read).count() << "ms" << std::endl;
-
+    */
 
     // color filtering
-    color_filtering(warped, binary_line, cv::Scalar(115,160,105), cv::Scalar(193, 220, 191));
+    color_filtering(bgr, binary_line, cv::Scalar(115,160,105), cv::Scalar(193, 220, 191));
     srv::imshow("binary_line", binary_line);
     auto tcolor = std::chrono::system_clock::now();
-    std::cout << "color filtering: " << std::chrono::duration_cast<std::chrono::milliseconds>(tcolor - tpersp_warp).count() << "ms" << std::endl;
+    std::cout << "color filtering: " << std::chrono::duration_cast<std::chrono::milliseconds>(tcolor - timg_read).count() << "ms" << std::endl;
 
     /*
     // sobel filtering
