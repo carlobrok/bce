@@ -5,23 +5,25 @@
 #include <thread>
 #include <vector>
 
-void perspective_warp(cv::Mat &input, cv::Mat &warped) {
+cv::Mat transform_matrix(cv::Size mat_size) {
   cv::Point2f src[4] = {{0.16,0.45},{0.83,0.45},{-0.1,1},{1.1,1}};
   cv::Point2f dst[4] = {{0,0},{1,0},{0,1},{1,1}};
 
   for(auto &p : src) {
-    p.x *= input.cols;
-    p.y *= input.rows;
+    p.x *= mat_size.width;
+    p.y *= mat_size.height;
   }
 
   for(auto &p : dst) {
-    p.x *= input.cols;
-    p.y *= input.rows;
+    p.x *= mat_size.width;
+    p.y *= mat_size.height;
   }
 
-  auto M = cv::getPerspectiveTransform(src, dst);
+  return cv::getPerspectiveTransform(src, dst);
+}
 
-  cv::warpPerspective(input, warped, M, cv::Size(input.cols, input.rows), cv::INTER_LINEAR, cv::BORDER_REPLICATE);
+void perspective_warp(cv::Mat &input, cv::Mat &warped, cv::Mat & M) {
+  cv::warpPerspective(input, warped, M, input.size(), cv::INTER_LINEAR);
 }
 
 void color_filtering(cv::Mat &warped, cv::Mat &binary_line, cv::Scalar min, cv::Scalar max) {

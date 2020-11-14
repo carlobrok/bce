@@ -39,6 +39,10 @@ int main() {
   init_arduino(0x08);
 
   cv::Mat bgr, warped, binary_line, histogram;
+  while(!cam.read(bgr)){}
+
+  cv::Mat transform_M = transform_matrix(bgr.size());
+
   while(1) {
 
     auto tstart = std::chrono::system_clock::now();
@@ -59,7 +63,7 @@ int main() {
 // generate binary:
 
     // perspective_warp
-    perspective_warp(bgr, warped);
+    perspective_warp(bgr, warped, transform_M);
     auto tpersp_warp = std::chrono::system_clock::now();
     std::cout << "perspective_warp: " << std::chrono::duration_cast<std::chrono::milliseconds>(tpersp_warp - timg_read).count() << "ms" << std::endl;
 
