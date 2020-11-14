@@ -16,6 +16,8 @@
 
 int main() {
 
+  std::cout << "OpenCV optimization: " << cv::useOptimized() << std::endl;
+
   srv::init(true);				// Klasse für den VideoServer
 
   CameraCapture cam(0);
