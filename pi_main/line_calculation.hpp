@@ -40,4 +40,8 @@ void draw_boxes(cv::Mat& img, const std::vector<WindowBox>& boxes);
 
 void calc_midpoints(const std::vector<WindowBox>& left_boxes, const std::vector<WindowBox>& right_boxes, std::vector<cv::Point> & midpoints);
 
+void draw_line(cv::Mat & img, cv::Vec4f & line);
+
+void boxes_to_line(std::vector<WindowBox>& boxes, cv::Vec4f & line);
+
 #endif

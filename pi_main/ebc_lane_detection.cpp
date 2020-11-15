@@ -16,7 +16,7 @@
 
 int main() {
 
-  srv::init(true);				// Klasse für den VideoServer
+  srv::init(true);				// init VideoServer
 
   CameraCapture cam(0);
   std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -91,20 +91,33 @@ int main() {
 // calculate lines:
     // window search
     std::vector<WindowBox> left_boxes, right_boxes;
+    cv::Vec4f line_left, line_right;
     window_search(binary_line, histogram, left_boxes, right_boxes, 12, 200);
 
     std::cout << "lbs " << left_boxes.size() << " rbs " << right_boxes.size() << std::endl;
 
+    boxes_to_line(left_boxes, line_left);
+    boxes_to_line(right_boxes, line_right);
+
+    std::cout << "line_left: " << line_left << " line_right" << line_right << std::endl;
+
+    draw_line(bgr, line_left);
+    draw_line(bgr, line_right);
+
+    /*calc_midline(left_boxes, right_boxes);
+
     std::vector<cv::Point> midpoints;
     midpoints.reserve(12);
     calc_midpoints(left_boxes, right_boxes, midpoints);
-    std::cout << "midpoints: " << midpoints.size() << std::endl;
+    std::cout << "midpoints: " << midpoints.size() << std::endl;*/
+    
     auto tline_calc = std::chrono::system_clock::now();
     std::cout << "calculate lines: " << std::chrono::duration_cast<std::chrono::milliseconds>(tline_calc - tbin_img).count() << "ms" << std::endl;
+
 // ========= autonomous driving ========
 
     // calculate speed from midpoints
-    int speed = calc_speed(midpoints);
+    /*int speed = calc_speed(midpoints);
     std::cout << speed << std::endl;
 
     // calculate steering
@@ -126,6 +139,8 @@ int main() {
     } else {
       std::cout << "Successfully sent i2c data" << std::endl;
     }
+
+    */
 
 // output images:
 
