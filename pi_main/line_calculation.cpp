@@ -139,11 +139,11 @@ void lane_line::draw(cv::Mat & img) {
 	// if y is given:  =>  x = (y - y0) / vy * vx + x0
 cv::Point lane_line::top(int img_height) {
 	if(!has_lane()) return cv::Point(0,0);
-	return cv::Point(0, (-m_line[3]) / m_line[1] * m_line[0] + m_line[2]);	// calculate x value with y = 0;
+	return cv::Point((-m_line[3]) / m_line[1] * m_line[0] + m_line[2], 0);	// calculate x value with y = 0;
 }
 cv::Point lane_line::bottom(int img_height) {
 	if(!has_lane()) return cv::Point(0,img_height);
-	return cv::Point(img_height, (img_height - m_line[3]) / m_line[1] * m_line[0] + m_line[2]);	// calculate x value with y = img_height
+	return cv::Point((img_height - m_line[3]) / m_line[1] * m_line[0] + m_line[2], img_height);	// calculate x value with y = img_height
 }
 
 
