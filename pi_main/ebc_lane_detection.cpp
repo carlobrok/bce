@@ -68,7 +68,7 @@ int main() {
     */
 
     // color filtering
-    color_filtering(bgr, binary_line, cv::Scalar(115,115,105), cv::Scalar(193, 220, 191));
+    color_filtering(bgr, binary_line, cv::Scalar(115,115,105), cv::Scalar(205, 220, 200));
     srv::imshow("binary_line", binary_line);
     auto tcolor = std::chrono::system_clock::now();
     std::cout << "color filtering: " << std::chrono::duration_cast<std::chrono::milliseconds>(tcolor - timg_read).count() << "ms" << std::endl;
@@ -92,7 +92,7 @@ int main() {
     // window search
     std::vector<WindowBox> left_boxes, right_boxes;
     cv::Vec4f line_left, line_right;
-    window_search(binary_line, histogram, left_boxes, right_boxes, 12, 200);
+    window_search(binary_line, histogram, left_boxes, right_boxes, 20, 200);
 
     std::cout << "lbs " << left_boxes.size() << " rbs " << right_boxes.size() << std::endl;
 
