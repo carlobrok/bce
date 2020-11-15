@@ -57,7 +57,7 @@ public:
   
   void draw (cv::Mat & img);
 
-  float angle() { return atan( m_line[0] / m_line[1] ) * 180 / 3.142; }
+  float angle() { return atan( - m_line[0] / m_line[1] ) * 180 / 3.142; }
 };
 
 lane_line calc_midline(lane_line left, lane_line right, cv::Size image_size);
