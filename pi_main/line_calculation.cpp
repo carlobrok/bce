@@ -9,6 +9,8 @@ WindowBox::WindowBox(cv::Point p_start, cv::Size window_size, cv::Size image_siz
 
 	m_center = p_start;
 	m_min_count = min_count;
+	m_window_size = window_size;
+	m_image_size = image_size;
 
 	m_lane_found = false;
 	
@@ -25,7 +27,7 @@ WindowBox::WindowBox(cv::Point p_start, cv::Size window_size, cv::Size image_siz
 
 void WindowBox::find_lane(cv::Mat &line_binary) {
 	//std::cout << window_rect(line_binary) << std::endl;
-	cv::Mat window_roi = line_binary(window_rect(line_binary));
+	cv::Mat window_roi = line_binary(window_rect());
 
 	cv::Moments w_moments = cv::moments(window_roi);
 	if (isnan(w_moments.m10/w_moments.m00)) {
@@ -42,6 +44,10 @@ cv::Rect WindowBox::window_rect() const {
 	return cv::Rect(m_top_left, m_bottom_right);
 }
 
+WindowBox WindowBox::next_box() {
+	return WindowBox(next_p_start(), m_window_size, m_image_size);
+}
+
 void window_search(cv::Mat &line_binary, cv::Mat &histogram, std::vector<WindowBox>& left_boxes, std::vector<WindowBox>& right_boxes, int n_windows, int window_width) {
 
 	cv::Point peak_left, peak_right;
@@ -55,8 +61,8 @@ void window_search(cv::Mat &line_binary, cv::Mat &histogram, std::vector<WindowB
 	//std::cout << "starting at: l" << peak_left << "  r" << peak_right << std::endl;
 
 	// Initialise left and right window boxes
-	WindowBox wbl(peak_left,  window_width, window_height);
-	WindowBox wbr(peak_right, window_width, window_height);
+	WindowBox wbl(peak_left,  cv::Size(window_width, window_height), line_binary.size());
+	WindowBox wbr(peak_right, cv::Size(window_width, window_height), line_binary.size());
 
 	// Parallelize searching
 	std::thread left(find_lane_windows, std::ref(line_binary), std::ref(wbl), std::ref(left_boxes));
@@ -68,16 +74,12 @@ void window_search(cv::Mat &line_binary, cv::Mat &histogram, std::vector<WindowB
 
 void find_lane_windows(cv::Mat& binary_img, WindowBox &window_box, std::vector<WindowBox>& wboxes)
 {
-	window_box.find_lane(binary_img);
-	wboxes.push_back(window_box);
-	cv::Point next_p_start = window_box.next_p_start();
-	while(next_p_start.y > 0) {
-		WindowBox w_new(next_p_start, window_box.width(), window_box.height());
-		w_new.find_lane(binary_img);
-		wboxes.push_back(w_new);
-		next_p_start = w_new.next_p_start();
-		//std::cout << "next start: " << next_p_start << std::endl;
-	}
+	do {
+		window_box.find_lane(binary_img);
+		wboxes.push_back(window_box);
+		window_box = window_box.next_box();
+		//std::cout << "next start: " << window_box.center() << std::endl;
+	} while (window_box.center().y > 0);
 
 	return;
 }
@@ -105,7 +107,7 @@ void draw_boxes(cv::Mat& img, const std::vector<WindowBox>& boxes) {
 	// Draw the windows on the output image
 	for (const auto& box : boxes) {
 		if(box.has_lane()) {
-			cv::rectangle(img, box.window_rect(img), cv::Scalar(0, 255, 0), 2);
+			cv::rectangle(img, box.window_rect(), cv::Scalar(0, 255, 0), 2);
 			cv::circle(img, box.center(), 2, cv::Scalar(0,0,255), 2);
 		}
 	}

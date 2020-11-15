@@ -7,7 +7,8 @@
 class WindowBox {
 private:
   cv::Point m_center, m_top_left, m_bottom_right;
-  cv::Size m_window_size;
+  cv::Size m_window_size, m_image_size;
+
   bool m_lane_found;
   int m_min_count;
 
@@ -19,11 +20,12 @@ public:
   bool has_lane() const { return m_lane_found; }
   void find_lane(cv::Mat &line_binary);
 
-  int width() { return m_window_size.width;}
-  int height() { return m_window_size.height;}
+  cv::Size size() { return m_window_size; }
   cv::Point center() const { return m_center; }
-  cv::Point next_p_start() { return m_center - cv::Point(0, m_window_size.height); }
   cv::Rect window_rect() const;
+ 
+  cv::Point next_p_start() { return m_center - cv::Point(0, m_window_size.height); }
+  WindowBox next_box();
 };
 
 
