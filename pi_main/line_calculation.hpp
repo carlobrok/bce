@@ -5,26 +5,25 @@
 
 
 class WindowBox {
-
-  cv::Point m_center;
-
-  int m_width, m_height;
+private:
+  cv::Point m_center, m_top_left, m_bottom_right;
+  cv::Size m_window_size;
   bool m_lane_found;
   int m_min_count;
 
 public:
 
   WindowBox();
-  WindowBox(cv::Point p_start, int width, int height, int min_count = 50);
+  WindowBox(cv::Point p_start, cv::Size window_size, cv::Size image_size, int min_count = 50);
 
   bool has_lane() const { return m_lane_found; }
   void find_lane(cv::Mat &line_binary);
 
-  int get_width() { return m_width;}
-  int get_height() { return m_height;}
-  cv::Point get_center() const { return m_center; }
-  cv::Point get_next_start() { return cv::Point(m_center.x, m_center.y - m_height); }
-  cv::Rect get_window_rect(cv::Mat &img) const;
+  int width() { return m_window_size.width;}
+  int height() { return m_window_size.height;}
+  cv::Point center() const { return m_center; }
+  cv::Point next_p_start() { return m_center - cv::Point(0, m_window_size.height); }
+  cv::Rect window_rect() const;
 };
 
 

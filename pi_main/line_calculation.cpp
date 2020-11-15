@@ -5,20 +5,27 @@
 #include <iostream>
 #include <cmath>
 
-WindowBox::WindowBox(cv::Point p_start, int width, int height, int min_count) {
+WindowBox::WindowBox(cv::Point p_start, cv::Size window_size, cv::Size image_size, int min_count) {
 
 	m_center = p_start;
-	m_width = width;
-	m_height = height;
 	m_min_count = min_count;
 
 	m_lane_found = false;
+	
+	m_top_left.x = m_center.x - window_size.width / 2;
+	m_top_left.y = m_center.y - window_size.height / 2;
 
+	m_bottom_right.x = m_center.x + window_size.width / 2;
+	m_bottom_right.y = m_center.y + window_size.height / 2;
+
+	if(m_top_left.x < 0) m_top_left.x = 0;
+	else if(m_top_left.x > image_size.width) m_top_left.x = image_size.width;
+	if(m_bottom_right.x > image_size.width) m_bottom_right.x = image_size.width;
 }
 
 void WindowBox::find_lane(cv::Mat &line_binary) {
-	//std::cout << get_window_rect(line_binary) << std::endl;
-	cv::Mat window_roi = line_binary(get_window_rect(line_binary));
+	//std::cout << window_rect(line_binary) << std::endl;
+	cv::Mat window_roi = line_binary(window_rect(line_binary));
 
 	cv::Moments w_moments = cv::moments(window_roi);
 	if (isnan(w_moments.m10/w_moments.m00)) {
@@ -27,17 +34,12 @@ void WindowBox::find_lane(cv::Mat &line_binary) {
 
 	}
 	//std::cout << w_moments.m10 / w_moments.m00 + m_center.x - m_width / 2 << std::endl;
-	m_center.x = (int)(w_moments.m10 / w_moments.m00 + m_center.x - m_width / 2);
+	m_center.x = (int)(w_moments.m10 / w_moments.m00 + m_top_left.x);
 	m_lane_found = true;
 }
 
-cv::Rect WindowBox::get_window_rect(cv::Mat &img) const {
-	cv::Rect rect(m_center.x - m_width/2, m_center.y - m_height/2, m_width, m_height);
-	if(rect.x < 0) rect.x = 0;
-	else if(rect.x > img.cols) rect.x = img.cols;
-	if(rect.x + rect.width > img.cols) rect.width = img.cols - rect.x;
-
-	return rect;
+cv::Rect WindowBox::window_rect() const {	
+	return cv::Rect(m_top_left, m_bottom_right);
 }
 
 void window_search(cv::Mat &line_binary, cv::Mat &histogram, std::vector<WindowBox>& left_boxes, std::vector<WindowBox>& right_boxes, int n_windows, int window_width) {
@@ -68,12 +70,12 @@ void find_lane_windows(cv::Mat& binary_img, WindowBox &window_box, std::vector<W
 {
 	window_box.find_lane(binary_img);
 	wboxes.push_back(window_box);
-	cv::Point next_p_start = window_box.get_next_start();
+	cv::Point next_p_start = window_box.next_p_start();
 	while(next_p_start.y > 0) {
-		WindowBox w_new(next_p_start, window_box.get_width(), window_box.get_height());
+		WindowBox w_new(next_p_start, window_box.width(), window_box.height());
 		w_new.find_lane(binary_img);
 		wboxes.push_back(w_new);
-		next_p_start = w_new.get_next_start();
+		next_p_start = w_new.next_p_start();
 		//std::cout << "next start: " << next_p_start << std::endl;
 	}
 
@@ -103,8 +105,8 @@ void draw_boxes(cv::Mat& img, const std::vector<WindowBox>& boxes) {
 	// Draw the windows on the output image
 	for (const auto& box : boxes) {
 		if(box.has_lane()) {
-			cv::rectangle(img, box.get_window_rect(img), cv::Scalar(0, 255, 0), 2);
-			cv::circle(img, box.get_center(), 2, cv::Scalar(0,0,255), 2);
+			cv::rectangle(img, box.window_rect(img), cv::Scalar(0, 255, 0), 2);
+			cv::circle(img, box.center(), 2, cv::Scalar(0,0,255), 2);
 		}
 	}
 }
@@ -116,7 +118,7 @@ void calc_midpoints(const std::vector<WindowBox>& left_boxes, const std::vector<
 
 	for(size_t i = 0; i < left_boxes.size(); i++) {
 		if(left_boxes[i].has_lane() && right_boxes[i].has_lane()) {
-			midpoints.push_back((left_boxes[i].get_center() + right_boxes[i].get_center())/2);
+			midpoints.push_back((left_boxes[i].center() + right_boxes[i].center())/2);
 		}
 	}
 }
@@ -146,8 +148,8 @@ void boxes_to_line(std::vector<WindowBox>& boxes, cv::Vec4f & line) {
 	std::cout << "points: ";
 	for(WindowBox & b : boxes) {
 		if(b.has_lane()) {
-			points.push_back(b.get_center());
-			std::cout << b.get_center() << ", ";
+			points.push_back(b.center());
+			std::cout << b.center() << ", ";
 		}
 	}
 	std::cout << std::endl;
