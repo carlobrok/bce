@@ -32,6 +32,7 @@
 *.app
 
 .vscode
+.ccls_cache
 
 ebc_lane_detection
 ebc_calibrate
