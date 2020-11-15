@@ -115,11 +115,11 @@ int main() {
 // ========= autonomous driving ========
 
     // calculate speed from midpoints
-    /*int speed = calc_speed(midpoints);
-    std::cout << speed << std::endl;
+    // int speed = calc_speed(midpoints);
+    int speed = 50;
 
     // calculate steering
-    double angle = calc_angle(bgr, midpoints, true);
+    double angle = lane_mid.angle();
 
     std::cout << "speed, angle: " << speed << ", " << angle << std::endl;
 
@@ -131,14 +131,12 @@ int main() {
 
     // TODO if no obstacles send speed and steering to arduino
 
-    int e = mot::set_dir_pwm_steer(mot::FORWARD, speed, angle);
+    int e = mot::set_dir_pwm_steer(mot::FORWARD, speed, (int)angle);
     if(e < 0) {
       std::cout << "Error sending i2c data: " << strerror(errno) << std::endl;
     } else {
       std::cout << "Successfully sent i2c data" << std::endl;
     }
-
-    */
 
 // output images:
 

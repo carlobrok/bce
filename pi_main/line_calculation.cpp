@@ -163,19 +163,3 @@ lane_line calc_midline(lane_line left, lane_line right, cv::Size image_size) {
 	mid_line[3] = bottom_mid.y;		// set point y on line
 	return lane_line(mid_line);
 }
-
-
-
-// Obsolete
-void calc_midpoints(const std::vector<WindowBox>& left_boxes, const std::vector<WindowBox>& right_boxes, std::vector<cv::Point> & midpoints) {
-	midpoints.clear();
-
-	CV_Assert(left_boxes.size() == right_boxes.size());
-
-	for(size_t i = 0; i < left_boxes.size(); i++) {
-		if(left_boxes[i].has_lane() && right_boxes[i].has_lane()) {
-			midpoints.push_back((left_boxes[i].center() + right_boxes[i].center())/2);
-		}
-	}
-}
-
