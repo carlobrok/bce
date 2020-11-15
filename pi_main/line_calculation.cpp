@@ -130,12 +130,13 @@ void draw_line(cv::Mat & img, cv::Vec4f & line) {
 		// if y is given:  =>  x = (y - y0) / vy * vx + x0
 
 		p_top.y = 0;
-		p_top.x = line[3] / line[1] * line[0] + line[2];	// calculate x value with y = 0;
+		p_top.x = (-line[3]) / line[1] * line[0] + line[2];	// calculate x value with y = 0;
 
 		p_bottom.y = img.rows;
 		p_bottom.x = (img.rows - line[3]) / line[1] * line[0] + line[2];
 
 		std::cout << "p_top " << p_top << " / p_bottom " << p_bottom << std::endl;
+		cv::line(img, p_top, p_bottom, cv::Scalar(0,0,255));
 	}		
 }
 
@@ -149,7 +150,7 @@ void boxes_to_line(std::vector<WindowBox>& boxes, cv::Vec4f & line) {
 			std::cout << b.get_center() << ", ";
 		}
 	}
-
+	std::cout << std::endl;
 	if (points.size() > 0) {
 		cv::fitLine(points, line, cv::DIST_L2, 0, 0.01, 0.01);
 	} else {
