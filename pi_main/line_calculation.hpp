@@ -2,7 +2,7 @@
 #define LINE_CALCULATION
 
 #include <opencv2/opencv.hpp>
-
+#include <cmath>
 
 class WindowBox {
 private:
@@ -22,12 +22,11 @@ public:
 
   cv::Size size() { return m_window_size; }
   cv::Point center() const { return m_center; }
-  cv::Rect window_rect() const;
+  cv::Rect window_rect() const { return cv::Rect(m_top_left, m_bottom_right); }
  
   cv::Point next_p_start() { return m_center - cv::Point(0, m_window_size.height); }
-  WindowBox next_box();
+  WindowBox next_box() { return WindowBox(next_p_start(), m_window_size, m_image_size); }
 };
-
 
 void window_search(cv::Mat &warped, cv::Mat &histogram, std::vector<WindowBox>& left_boxes, std::vector<WindowBox>& right_boxes, int n_windows, int window_width);
 
@@ -35,14 +34,35 @@ void lane_peaks(cv::Mat const& histogram, cv::Point& left_max_loc, cv::Point& ri
 
 void find_lane_windows(cv::Mat& binary_img, WindowBox& window_box, std::vector<WindowBox>& wboxes);
 
-void polyfit(const cv::Mat& src_x, const cv::Mat& src_y, cv::Mat& dst, int order);
-
 void draw_boxes(cv::Mat& img, const std::vector<WindowBox>& boxes);
 
-void calc_midpoints(const std::vector<WindowBox>& left_boxes, const std::vector<WindowBox>& right_boxes, std::vector<cv::Point> & midpoints);
-
-void draw_line(cv::Mat & img, cv::Vec4f & line);
-
 void boxes_to_line(std::vector<WindowBox>& boxes, cv::Vec4f & line);
+
+
+
+class lane_line {
+private:
+
+  cv::Vec4f m_line;
+
+public:
+
+  lane_line(cv::Vec4f line) : m_line(line) {};
+
+  bool has_lane() { return (cv::countNonZero(m_line) > 0); }
+
+  cv::Vec4f line() { return m_line; }
+  cv::Point top (int img_height);
+  cv::Point bottom (int img_height);
+  
+  void draw (cv::Mat & img);
+
+  float angle() { return atan( m_line[0] / m_line[1] ) * 180 / 3.142; }
+};
+
+lane_line calc_midline(lane_line left, lane_line right, cv::Size image_size);
+
+// obsolete
+void calc_midpoints(const std::vector<WindowBox>& left_boxes, const std::vector<WindowBox>& right_boxes, std::vector<cv::Point> & midpoints);
 
 #endif
