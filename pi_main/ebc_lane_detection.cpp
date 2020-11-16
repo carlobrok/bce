@@ -14,6 +14,21 @@
 #include <chrono>
 #include <thread>
 
+#include <csignal>
+
+void signalHandler( int signum ) {
+    std::cout << "Signal (" << signum << ") received: stopping car" << std::endl;
+
+    for(int i = 0; i < 5; i++) {
+      mot::set_state(mot::OFF, true);
+      std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    }
+    // cleanup and close up stuff here  
+    // terminate program  
+
+    exit(signum);  
+}
+
 int main() {
 
   srv::init(true);				// init VideoServer
@@ -37,6 +52,10 @@ int main() {
   srv::namedWindow("sobel_thresh");*/
 
   init_arduino(0x08);
+
+  // hande interrupt and segmentation fault to brake motor
+  signal(SIGINT, signalHandler);
+  signal(SIGSEGV, signalHandler);
 
   cv::Mat bgr, /*warped,*/ binary_line, histogram;
 

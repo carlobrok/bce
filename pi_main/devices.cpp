@@ -118,9 +118,9 @@ int mot::set_dir_pwm_steer(uint8_t direction, uint8_t pwm, int angle) {
 // sets the motor to the given state by sending the values over I2C to the arduino
 
 last_values<1> last_state;
-int mot::set_state(uint8_t state) {
+int mot::set_state(uint8_t state, bool ignore_send_req) {
   uint8_t data[1] = {state};
-	if(send_req(data, last_state))
+	if(ignore_send_req || send_req(data, last_state))
 		return i2c_smbus_write_byte_data(arduino_fd, SET_STATE, data[0]);
 	else
 		return 0;

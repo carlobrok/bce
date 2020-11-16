@@ -42,7 +42,7 @@ namespace mot {
   int set_dir_pwm(uint8_t direction, uint8_t pwm);
   int set_dir_pwm_steer(uint8_t direction, uint8_t pwm, int angle);  
 
-  int set_state(uint8_t state);
+  int set_state(uint8_t state, bool ignore_send_req = false);
   int get_state();
 
 
