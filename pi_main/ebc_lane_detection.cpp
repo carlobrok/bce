@@ -19,10 +19,7 @@
 void signalHandler( int signum ) {
     std::cout << "Signal (" << signum << ") received: stopping car" << std::endl;
 
-    for(int i = 0; i < 5; i++) {
-      mot::set_state(mot::OFF, true);
-      std::this_thread::sleep_for(std::chrono::milliseconds(20));
-    }
+    mot::set_state(mot::OFF, true);
     // cleanup and close up stuff here  
     // terminate program  
 
