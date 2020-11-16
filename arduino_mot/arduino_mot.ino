@@ -32,13 +32,7 @@ enum states_read {
 
 // Motor variables
 
-// REVIEW: define pins
-const int d2_m1 = 5;
-const int d2_m2 = 6;
-const int in1_m1 = 7;
-const int in2_m1 = 8;
-const int in1_m2 = 9;
-const int in2_m2 = 10;
+const int motor_pin = 6;
 
 int mot_dir = MOTOR_FORWARD, mot_speed = 0, mot_state = OFF;
 
@@ -110,12 +104,7 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 
   // initialize pins for motor driver
-  pinMode(d2_m1, OUTPUT);
-  pinMode(d2_m2, OUTPUT);
-  pinMode(in1_m1, OUTPUT);
-  pinMode(in2_m1, OUTPUT);
-  pinMode(in1_m1, OUTPUT);
-  pinMode(in2_m1, OUTPUT);
+  pinMode(motor_pin, OUTPUT);
 
   for (int i = 0; i < 3; i++) {
     digitalWrite(LED_BUILTIN, HIGH);
@@ -233,37 +222,21 @@ void requestEvent() {
 // TODO: PID controller
 // TODO: inverse directions
 void fwd(int speed) {
-  digitalWrite(in1_m1, LOW);
-  digitalWrite(in1_m2, LOW);
-  digitalWrite(in2_m1, HIGH);
-  digitalWrite(in2_m2, HIGH);
-  analogWrite(d2_m1, speed);
-  analogWrite(d2_m2, speed);
+  analogWrite(motor_pin, speed);
   mot_state = ON;
   mot_dir = MOTOR_FORWARD;
 }
 
 void bwd(int speed) {
-  digitalWrite(in1_m1, HIGH);
-  digitalWrite(in1_m2, HIGH);
-  digitalWrite(in2_m1, LOW);
-  digitalWrite(in2_m2, LOW);
-  analogWrite(d2_m1, speed);
-  analogWrite(d2_m2, speed);
+  analogWrite(motor_pin, speed);
   mot_state = ON;
   mot_dir = MOTOR_BACKWARD;
 }
 
 void off(bool brake) {
-  digitalWrite(in1_m1, LOW);
-  digitalWrite(in1_m2, LOW);
-  digitalWrite(in2_m1, LOW);
-  digitalWrite(in2_m2, LOW);
-  analogWrite(d2_m1, 0);
-  analogWrite(d2_m2, 0);
+  analogWrite(motor_pin, 0);
   mot_speed = 0;
   mot_state = OFF;
-
 }
 
 void update_mot(int dir, int pwm) {
@@ -278,9 +251,21 @@ void update_mot(int dir, int pwm) {
 
 // Steering function
 
-void steer(float angle) {
+void steer(int angle) {
   // TODO: calculate pwm from angle
-  int servo_angle = angle;
-
-  steering_servo.write(servo_angle);
+  angle -= 100;
+  print("angle: ");
+  println(angle);
+  int servo_pwm = 0.851 * angle + 83.5;
+  print("pwm: ");
+  println(servo_pwm);
+  if(servo_pwm < STEER_PWM_LEFT) {
+    servo_pwm = STEER_PWM_LEFT;
+  }
+  else if(servo_pwm > STEER_PWM_RIGHT) {
+    servo_pwm = STEER_PWM_RIGHT;
+  }
+  print("mapped pwm: ");
+  println(servo_pwm);
+  steering_servo.write(servo_pwm);
 }
