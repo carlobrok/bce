@@ -33,6 +33,7 @@ enum states_read {
 // Motor variables
 
 const int motor_pin = 6;
+const int max_speed = 35;
 
 int mot_dir = MOTOR_FORWARD, mot_speed = 0, mot_state = OFF;
 
@@ -222,12 +223,14 @@ void requestEvent() {
 // TODO: PID controller
 // TODO: inverse directions
 void fwd(int speed) {
+  if(speed > max_speed) speed = max_speed;  // dont drive too fast -> crash
   analogWrite(motor_pin, speed);
   mot_state = ON;
   mot_dir = MOTOR_FORWARD;
 }
 
 void bwd(int speed) {
+  if(speed > max_speed) speed = max_speed;  // dont drive too fast -> crash
   analogWrite(motor_pin, speed);
   mot_state = ON;
   mot_dir = MOTOR_BACKWARD;
