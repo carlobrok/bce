@@ -152,11 +152,16 @@ lane_line calc_midline(lane_line left, lane_line right, cv::Size image_size) {
 
 	if(left.has_lane() && right.has_lane()) {
 		mid_line = left.line() + right.line();
+		std::cout << "combining left and right" << std::endl;
 	} else if (left.has_lane()) {
 		mid_line = left.line();
+		std::cout << "only left" << std::endl;
 	} else if (right.has_lane()) {
-		mid_line = left.line();
+		mid_line = right.line();
+		std::cout << "only right" << std::endl;
 	}
+
+
 	/*cv::Point top_mid = (left.top(image_size.height) + right.top(image_size.height)) / 2;
 	
 	} else {

@@ -124,7 +124,9 @@ int main() {
     lane_right.draw(bgr);
     lane_left.draw(bgr);
     lane_mid.draw(bgr);
-  
+
+    std::cout << "lane mid vec: "  << lane_mid.line() << std::endl; 
+
     auto tline_calc = std::chrono::system_clock::now();
     std::cout << "calculate lines: " << std::chrono::duration_cast<std::chrono::milliseconds>(tline_calc - tbin_img).count() << "ms" << std::endl;
 
