@@ -149,17 +149,22 @@ cv::Point lane_line::bottom(int img_height) {
 
 lane_line calc_midline(lane_line left, lane_line right, cv::Size image_size) {
 	cv::Vec4f mid_line;
-	cv::Point bottom_mid( image_size.width / 2, image_size.height);
 
 	if(left.has_lane() && right.has_lane()) {
-		cv::Point top_mid = (left.top(image_size.height) + right.top(image_size.height)) / 2;
-		mid_line[0] = top_mid.x - bottom_mid.x;
-		mid_line[1] = top_mid.y - bottom_mid.y;
+		mid_line = left.line() + right.line();
+	} else if (left.has_lane()) {
+		mid_line = left.line();
+	} else if (right.has_lane()) {
+		mid_line = left.line();
+	}
+	/*cv::Point top_mid = (left.top(image_size.height) + right.top(image_size.height)) / 2;
+	
 	} else {
 		mid_line = left.line() + right.line();	// add vectors to calculate: m0 = l0 + r0 and m1 = l1 + r1
-	}
+	}*/
 
-	mid_line[2] = bottom_mid.x;		// set point x on line
-	mid_line[3] = bottom_mid.y;		// set point y on line
+	// TODO: funktioniert nur, wenn zwei virhanden sind.
+	mid_line[2] = (left.bottom(image_size.height).x + right.bottom(image_size.height).x) / 2;		// set point x on line
+	mid_line[3] = image_size.height;		// set point y on line
 	return lane_line(mid_line);
 }
