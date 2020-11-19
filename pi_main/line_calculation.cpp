@@ -146,42 +146,15 @@ cv::Point lane_line::bottom(int img_height) {
 	return cv::Point((img_height - m_line[3]) / m_line[1] * m_line[0] + m_line[2], img_height);	// calculate x value with y = img_height
 }
 
-// sign checking template
-template <typename T> int sgn(T val) {
-    return (T(0) < val) - (val < T(0));
-}
-
-
 lane_line calc_midline(lane_line left, lane_line right, cv::Size image_size) {
 	cv::Vec4f mid_line;
-
-	if(left.has_lane() && right.has_lane()) {
-		cv::Vec4f v_left = left.line(), v_right = right.line();
-		// wenn die vorzeichen nicht idenitisch sind subtrahieren, sonst addieren
-		if (sgn(v_left[1]) != sgn(v_right[1])) {
-			mid_line = left.line() - right.line();
-		} else {
-			mid_line = left.line() + right.line();
-		}
-		
-		std::cout << "combining left and right" << std::endl;
-	} else if (left.has_lane()) {
-		mid_line = left.line();
-		std::cout << "only left" << std::endl;
-	} else if (right.has_lane()) {
-		mid_line = right.line();
-		std::cout << "only right" << std::endl;
-	}
-
-
-	/*cv::Point top_mid = (left.top(image_size.height) + right.top(image_size.height)) / 2;
-	
-	} else {
-		mid_line = left.line() + right.line();	// add vectors to calculate: m0 = l0 + r0 and m1 = l1 + r1
-	}*/
+	cv::Point2f bot_mid((left.bottom(image_size.height).x + right.bottom(image_size.height).x) / 2, image_size.height);
+	cv::Point2f top_mid((left.top(image_size.height).x + right.top(image_size.height).x) / 2, 0);
 
 	// TODO: funktioniert nur, wenn zwei virhanden sind.
-	mid_line[2] = (left.bottom(image_size.height).x + right.bottom(image_size.height).x) / 2;		// set point x on line
-	mid_line[3] = image_size.height;		// set point y on line
+	mid_line[0] = bot_mid.x - top_mid.x;
+	mid_line[1] = bot_mid.y - top_mid.y;
+	mid_line[2] = bot_mid.x;		// set point x on line
+	mid_line[3] = bot_mid.y;		// set point y on line
 	return lane_line(mid_line);
 }
