@@ -146,12 +146,24 @@ cv::Point lane_line::bottom(int img_height) {
 	return cv::Point((img_height - m_line[3]) / m_line[1] * m_line[0] + m_line[2], img_height);	// calculate x value with y = img_height
 }
 
+// sign checking template
+template <typename T> int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
 
 lane_line calc_midline(lane_line left, lane_line right, cv::Size image_size) {
 	cv::Vec4f mid_line;
 
 	if(left.has_lane() && right.has_lane()) {
-		mid_line = left.line() + right.line();
+		cv::Vec4f v_left = left.line(), v_right = right.line();
+		// wenn die vorzeichen nicht idenitisch sind subtrahieren, sonst addieren
+		if (sgn(v_left[1]) != sgn(v_right[1])) {
+			mid_line = left.line() - right.line();
+		} else {
+			mid_line = left.line() + right.line();
+		}
+		
 		std::cout << "combining left and right" << std::endl;
 	} else if (left.has_lane()) {
 		mid_line = left.line();
