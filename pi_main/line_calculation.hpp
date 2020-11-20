@@ -28,11 +28,11 @@ public:
   WindowBox next_box() { return WindowBox(next_p_start(), m_window_size, m_image_size); }
 };
 
-void window_search(cv::Mat &warped, cv::Mat &histogram, std::vector<WindowBox>& left_boxes, std::vector<WindowBox>& right_boxes, int n_windows, int window_width);
+void window_search(cv::Mat &line_binary, cv::Mat &histogram, std::vector<WindowBox>& left_boxes, std::vector<WindowBox>& right_boxes, int n_windows, cv::Size window_size);
 
 void lane_peaks(cv::Mat const& histogram, cv::Point& left_max_loc, cv::Point& right_max_loc);
 
-void find_lane_windows(cv::Mat& binary_img, WindowBox& window_box, std::vector<WindowBox>& wboxes);
+void find_lane_windows(cv::Mat& binary_img, WindowBox &window_box, std::vector<WindowBox>& wboxes, int n_windows);
 
 void draw_boxes(cv::Mat& img, const std::vector<WindowBox>& boxes);
 

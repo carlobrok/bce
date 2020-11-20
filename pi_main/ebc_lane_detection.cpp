@@ -16,6 +16,8 @@
 
 #include <csignal>
 
+const int n_windows = 12;
+
 void signalHandler( int signum ) {
     std::cout << "Signal (" << signum << ") received: stopping car" << std::endl;
 
@@ -104,11 +106,12 @@ int main() {
     auto tbin_img = std::chrono::system_clock::now();
     std::cout << "generate binary: " << std::chrono::duration_cast<std::chrono::milliseconds>(tbin_img - tcolor).count() << "ms" << std::endl;
 
-// calculate lines:
+    // calculate lines:
     // window search
     std::vector<WindowBox> left_boxes, right_boxes;
+    // Vektor, der die Gerade/Linie beinhaltet
     cv::Vec4f line_left, line_right;
-    window_search(binary_line, histogram, left_boxes, right_boxes, 20, 200);
+    window_search(binary_line, histogram, left_boxes, right_boxes, n_windows, cv::Size(200, binary_line.rows / 20));
 
     std::cout << "lbs " << left_boxes.size() << " rbs " << right_boxes.size() << std::endl;
 

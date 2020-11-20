@@ -43,38 +43,38 @@ void WindowBox::find_lane(cv::Mat &line_binary) {
 	m_lane_found = true;
 }
 
-void window_search(cv::Mat &line_binary, cv::Mat &histogram, std::vector<WindowBox>& left_boxes, std::vector<WindowBox>& right_boxes, int n_windows, int window_width) {
+void window_search(cv::Mat &line_binary, cv::Mat &histogram, std::vector<WindowBox>& left_boxes, std::vector<WindowBox>& right_boxes, int n_windows, cv::Size window_size) {
+
+	CV_Assert( window_size.height * n_windows <= line_binary.rows );
 
 	cv::Point peak_left, peak_right;
 	lane_peaks(histogram, peak_left, peak_right); // Peaks
 
-	int window_height = line_binary.rows / n_windows;
-
-	peak_left.y = line_binary.rows - window_height/2;
-	peak_right.y = line_binary.rows - window_height/2;
+	peak_left.y = line_binary.rows - window_size.height/2;
+	peak_right.y = line_binary.rows - window_size.height/2;
 
 	//std::cout << "starting at: l" << peak_left << "  r" << peak_right << std::endl;
 
 	// Initialise left and right window boxes
-	WindowBox wbl(peak_left,  cv::Size(window_width, window_height), line_binary.size());
-	WindowBox wbr(peak_right, cv::Size(window_width, window_height), line_binary.size());
+	WindowBox wbl(peak_left,  window_size, line_binary.size());
+	WindowBox wbr(peak_right, window_size, line_binary.size());
 
 	// Parallelize searching
-	std::thread left(find_lane_windows, std::ref(line_binary), std::ref(wbl), std::ref(left_boxes));
-	std::thread right(find_lane_windows, std::ref(line_binary), std::ref(wbr), std::ref(right_boxes));
+	std::thread left(find_lane_windows, std::ref(line_binary), std::ref(wbl), std::ref(left_boxes), n_windows);
+	std::thread right(find_lane_windows, std::ref(line_binary), std::ref(wbr), std::ref(right_boxes), n_windows);
 	left.join();
 	right.join();
 
 }
 
-void find_lane_windows(cv::Mat& binary_img, WindowBox &window_box, std::vector<WindowBox>& wboxes)
+void find_lane_windows(cv::Mat& binary_img, WindowBox &window_box, std::vector<WindowBox>& wboxes, int n_windows)
 {
-	do {
+	for ( int n = 0; n < n_windows && window_box.center().y > 0; n++) {
 		window_box.find_lane(binary_img);
 		wboxes.push_back(window_box);
 		window_box = window_box.next_box();
 		//std::cout << "next start: " << window_box.center() << std::endl;
-	} while (window_box.center().y > 0);
+	}
 
 	return;
 }
