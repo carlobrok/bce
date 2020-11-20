@@ -139,8 +139,10 @@ int main() {
     // int speed = calc_speed(midpoints);
     int speed = 50;
 
+    double diff_mid = (lane_mid.line()[2] - binary_line.cols/2);
+    std::cout << "diff to mid: " <<  diff_mid << std::endl;
     // calculate steering
-    double angle = lane_mid.angle();
+    double angle = lane_mid.angle() + (diff_mid / 6);
 
     std::cout << "speed, angle: " << speed << ", " << angle << std::endl;
 
