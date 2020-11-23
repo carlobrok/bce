@@ -124,37 +124,37 @@ void boxes_to_line(std::vector<WindowBox>& boxes, cv::Vec4f & line) {
 	}
 }
 
+lane_line calc_midline(lane_line & left, lane_line & right, cv::Size image_size) {
+	cv::Point2f bot_mid((left.bottom(image_size.height).x + right.bottom(image_size.height).x) / 2, image_size.height);
+	cv::Point2f top_mid((left.top(image_size.height).x + right.top(image_size.height).x) / 2, 0);
+	cv::Vec2f vec(bot_mid.x - top_mid.x, bot_mid.y - top_mid.y);
+
+	// TODO: funktioniert nur, wenn zwei virhanden sind.
+	return lane_line(vec, bot_mid, 'm');
+}
 
 // lane line ==========================
 
-void lane_line::draw(cv::Mat & img) {
+void lane_line::draw(cv::Mat & img, cv::Scalar color) {
 	if(has_lane()) {
 		std::cout << "p_top " << top(img.rows) << " / p_bottom " << bottom(img.rows) << std::endl;
-		cv::line(img, top(img.rows), bottom(img.rows), cv::Scalar(0,0,255));
+		cv::line(img, top(img.rows), bottom(img.rows), color);
 	}
 }
 
-// calculation for x values:
-	// (x,y) = t*(vx,vy) + (x0,y0) 
-	// if y is given:  =>  x = (y - y0) / vy * vx + x0
+std::ostream& operator<<(std::ostream& os, const lane_line& ll) { 
+    return os << "[" << ll.id << ": v" << ll.vec << ", p" << ll.point << "]"; 
+} 
+
+/* calculation for x values:
+ * (x,y) = t*(vx,vy) + (x0,y0) 
+ * if y is given:  =>  x = (y - y0) / vy * vx + x0
+ */
 cv::Point lane_line::top(int img_height) {
 	if(!has_lane()) return cv::Point(0,0);
-	return cv::Point((-m_line[3]) / m_line[1] * m_line[0] + m_line[2], 0);	// calculate x value with y = 0;
+	return cv::Point((-point.y) / vec[1] * vec[0] + point.x, 0);	// calculate x value with y = 0;
 }
 cv::Point lane_line::bottom(int img_height) {
 	if(!has_lane()) return cv::Point(0,img_height);
-	return cv::Point((img_height - m_line[3]) / m_line[1] * m_line[0] + m_line[2], img_height);	// calculate x value with y = img_height
-}
-
-lane_line calc_midline(lane_line left, lane_line right, cv::Size image_size) {
-	cv::Vec4f mid_line;
-	cv::Point2f bot_mid((left.bottom(image_size.height).x + right.bottom(image_size.height).x) / 2, image_size.height);
-	cv::Point2f top_mid((left.top(image_size.height).x + right.top(image_size.height).x) / 2, 0);
-
-	// TODO: funktioniert nur, wenn zwei virhanden sind.
-	mid_line[0] = bot_mid.x - top_mid.x;
-	mid_line[1] = bot_mid.y - top_mid.y;
-	mid_line[2] = bot_mid.x;		// set point x on line
-	mid_line[3] = bot_mid.y;		// set point y on line
-	return lane_line(mid_line);
+	return cv::Point((img_height - point.y) / vec[1] * vec[0] + point.x, img_height);	// calculate x value with y = img_height
 }

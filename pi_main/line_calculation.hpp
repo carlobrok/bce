@@ -3,6 +3,7 @@
 
 #include <opencv2/opencv.hpp>
 #include <cmath>
+#include <ostream>
 
 class WindowBox {
 private:
@@ -38,31 +39,34 @@ void draw_boxes(cv::Mat& img, const std::vector<WindowBox>& boxes);
 
 void boxes_to_line(std::vector<WindowBox>& boxes, cv::Vec4f & line);
 
-
-
-class lane_line {
-private:
-
-  cv::Vec4f m_line;
-
-public:
-
-  lane_line(cv::Vec4f line) : m_line(line) {};
-
-  bool has_lane() { return (cv::countNonZero(m_line) > 0); }
-
-  cv::Vec4f line() { return m_line; }
-  cv::Point top (int img_height);
-  cv::Point bottom (int img_height);
-  
-  void draw (cv::Mat & img);
-
-  float angle() { return atan( - m_line[0] / m_line[1] ) * 180 / 3.142; }
-};
-
 lane_line calc_midline(lane_line left, lane_line right, cv::Size image_size);
 
 // obsolete
 void calc_midpoints(const std::vector<WindowBox>& left_boxes, const std::vector<WindowBox>& right_boxes, std::vector<cv::Point> & midpoints);
+
+
+
+class lane_line {
+public: 
+
+  cv::Vec2f vec;
+  cv::Point2f point;
+  char id;
+
+  lane_line() { vec.zeros(); };
+  lane_line(cv::Vec4f line, char id = 'n') : vec( line[0],line[1] ), point( line[2],line[3] ), id(id) {};
+  lane_line(cv::Vec2f vec, cv::Point point, char id = 'n') : vec(vec) , point(point), id(id) {};
+
+  cv::Point top( int img_height );
+  cv::Point bottom( int img_height );
+  
+  void draw( cv::Mat & img, cv::Scalar color = cv::Scalar(0,0,255));
+  friend std::ostream& operator<<(std::ostream& os, const lane_line& ln);
+
+  bool has_lane() { return ( cv::countNonZero(vec) > 0 ); }
+  float angle() { return atan( - vec[0] / vec[1] ) * 180 / 3.142; }
+};
+
+
 
 #endif

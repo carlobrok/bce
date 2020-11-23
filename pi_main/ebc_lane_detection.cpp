@@ -56,10 +56,9 @@ int main() {
   signal(SIGINT, signalHandler);
   signal(SIGSEGV, signalHandler);
 
-  cv::Mat bgr, /*warped,*/ binary_line, histogram;
+  cv::Mat bgr, binary_line, histogram;
 
-  //while(!cam.read(bgr)){}
-  //cv::Mat transform_M = transform_matrix(bgr.size());
+  lane_line lane_left, lane_right, lane_mid;
 
   while(1) {
 
@@ -139,7 +138,7 @@ int main() {
     // int speed = calc_speed(midpoints);
     int speed = 50;
 
-    double diff_mid = (lane_mid.line()[2] - binary_line.cols/2);
+    double diff_mid = (lane_mid.point.x - binary_line.cols/2);
     std::cout << "diff to mid: " <<  diff_mid << std::endl;
     // calculate steering
     double angle = lane_mid.angle() + (diff_mid / 6);
