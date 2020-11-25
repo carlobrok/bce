@@ -33,7 +33,7 @@ enum states_read {
 // Motor variables
 
 const int motor_pin = 6;
-const int max_speed = 35;
+const int max_speed = 30;
 
 int mot_dir = MOTOR_FORWARD, mot_speed = 0, mot_state = OFF;
 
@@ -94,12 +94,15 @@ void setup() {
   Wire.onReceive(receiveEvent);
   Wire.onRequest(requestEvent);
   print("address: "); println(SLAVE_ADDRESS);
-
+  // turn motor off
+  println("turn motor off...");
+  off();
+  
   // initialize Servo
   println("init servo..");
   steering_servo.attach(SERVO_PIN);
-  steer((STEER_PWM_LEFT + STEER_PWM_RIGHT) / 2);
-
+  steer(100); // mitte entspricht 0 grad
+  
   // init led
   println("init pinouts..");
   pinMode(LED_BUILTIN, OUTPUT);
@@ -118,9 +121,7 @@ void setup() {
 
 void loop() {
   digitalWrite(LED_BUILTIN, HIGH);
-  fwd(255);
   delay(2000);
-  off();
   digitalWrite(LED_BUILTIN, LOW);
   delay(3000 - 2000);
 
