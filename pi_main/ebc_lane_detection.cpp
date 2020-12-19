@@ -124,7 +124,7 @@ int main() {
 
             // ROI search Methode
             
-            roi_search(binary_line, lane_mid, lane_left, lane_right, binary_line.rows / 20, n_windows);
+            roi_search(binary_line, bgr, lane_mid, lane_left, lane_right, binary_line.rows / 20, n_windows);
                     
             /*IDEA: 
             sprünge verhindern:

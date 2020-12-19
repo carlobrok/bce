@@ -25,7 +25,7 @@ void draw_boxes(cv::Mat& img, const std::vector<WindowBox>& boxes);
  * @param n_rois Anzahl an ROIs übereinander
  * @param min_area_size Schwellwert, unter dem der Center der Fläche im ROI nicht berechnet wird (Vermeidung Bildsrauschen)
  */
-void roi_search(cv::Mat & binary_line, lane_data & lane_mid, lane_data & lane_left, lane_data & lane_right, int roi_height, int n_rois, int min_area_size = 30);
+void roi_search(cv::Mat & binary_line, cv::Mat & vis_draw, lane_data & lane_mid, lane_data & lane_left, lane_data & lane_right, int roi_height, int n_rois, int min_area_size = 30);
 
 lane_data calc_midline(lane_data & left, lane_data & right, cv::Size image_size);
 
