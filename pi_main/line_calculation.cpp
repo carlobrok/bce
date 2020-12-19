@@ -72,7 +72,7 @@ bool roi_in_mat(cv::Mat & m, cv::Rect roi) {
 	return 0 <= roi.x && 0 <= roi.width && roi.x + roi.width <= m.cols && 0 <= roi.y && 0 <= roi.height && roi.y + roi.height <= m.rows;
 }
 
-void roi_search(cv::Mat & binary_line, lane_data & lane_mid, lane_data & lane_left, lane_data & lane_right, int roi_height, int n_rois, int min_area_size) {
+void roi_search(cv::Mat & binary_line, cv::Mat & vis_draw, lane_data & lane_mid, lane_data & lane_left, lane_data & lane_right, int roi_height, int n_rois, int min_area_size) {
 	
 	std::vector<cv::Point> points_left, points_right;
 	
@@ -86,40 +86,50 @@ void roi_search(cv::Mat & binary_line, lane_data & lane_mid, lane_data & lane_le
 		cv::Rect rect_roi_left(0, (i_roi + 1) * roi_height, p_mid.x, roi_height);
 		cv::Rect rect_roi_right(p_mid.x, (i_roi + 1) * roi_height, binary_line.cols - p_mid.x, roi_height);
 
-		std::cout << "i=" << i_roi << "/ left: " << rect_roi_left << "/ right: " << rect_roi_right << std::endl;
+		std::cout << "i=" << i_roi << " / left: " << rect_roi_left << " / right: " << rect_roi_right << " // area; point: ";;
 
 		// Ablauf:
 			// mat vom roi bereich erstellen
 			// moments der ROIs bestimmen
 			// moments area größer als min wert?
 				// Mittelpunkt der Fläche bestimmen
-				// Mittelpunkt in vector für neue linie links/rechts schreiben
-		
-		std::cout << "area; point: " << std::endl;
+				// Mittelpunkt in vector für neue linie links/rechts schreiben		
 
 		if(roi_in_mat(binary_line, rect_roi_left)) {
+
+			cv::rectangle(vis_draw, rect_roi_left, cv::Scalar(255, 255, 0), 2);
+
 			cv::Mat roi_left = binary_line(rect_roi_left);
 			cv::Moments m_left = cv::moments(roi_left,true);
 			
 			std::cout << " left: " << m_left.m00 << "; ";
 
 			if(m_left.m00 > min_area_size) {
-				points_left.push_back( cv::Point(m_left.m10 / m_left.m00, p_mid.y));
-				std::cout << cv::Point(m_left.m10 / m_left.m00, p_mid.y);
+				cv::Point c = cv::Point(m_left.m10 / m_left.m00, p_mid.y);
+				points_left.push_back(c);
+				std::cout << c;
+
+				cv::circle(vis_draw, c, 2, cv::Scalar(0,0,255), 2);
 			}
 		} else {
 			std::cout << "left not in mat";
 		}
 
 		if(roi_in_mat(binary_line, rect_roi_right)) {
+
+			cv::rectangle(vis_draw, rect_roi_right, cv::Scalar(255, 255, 0), 2);
+
 			cv::Mat roi_right = binary_line(rect_roi_right);
 			cv::Moments m_right = cv::moments(roi_right,true);
 
 			std::cout << " / right: " << m_right.m00 << "; ";
 
 			if(m_right.m00 > min_area_size) {
-				points_right.push_back( cv::Point(p_mid.x + m_right.m10 / m_right.m00, p_mid.y));
-				std::cout << cv::Point(p_mid.x + m_right.m10 / m_right.m00, p_mid.y);
+				cv::Point c = cv::Point(p_mid.x + m_right.m10 / m_right.m00, p_mid.y);
+				points_right.push_back(c);
+				std::cout << c;
+
+				cv::circle(vis_draw, c, 2, cv::Scalar(0,0,255), 2);
 			}
 		} else {
 			std::cout << " / right not in mat";
