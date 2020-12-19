@@ -68,6 +68,9 @@ void draw_boxes(cv::Mat& img, const std::vector<WindowBox>& boxes) {
 	}
 }
 
+bool roi_in_mat(cv::Mat & m, cv::Rect roi) {
+	return 0 <= roi.x && 0 <= roi.width && roi.x + roi.width <= m.cols && 0 <= roi.y && 0 <= roi.height && roi.y + roi.height <= m.rows;
+}
 
 void roi_search(cv::Mat & binary_line, lane_data & lane_mid, lane_data & lane_left, lane_data & lane_right, int roi_height, int n_rois, int min_area_size) {
 	
@@ -85,24 +88,29 @@ void roi_search(cv::Mat & binary_line, lane_data & lane_mid, lane_data & lane_le
 
 		std::cout << "i=" << i_roi << "/ left: " << rect_roi_left << "/ right: " << rect_roi_right << std::endl;
 
-		// mat vom roi bereich erstellen
-		cv::Mat roi_left = binary_line(rect_roi_left);
-		cv::Mat roi_right = binary_line(rect_roi_right);
-		
-		// moments der ROIs bestimmen
-		cv::Moments m_left = cv::moments(roi_left,true);
-		cv::Moments m_right = cv::moments(roi_right,true);
+		// Ablauf:
+			// mat vom roi bereich erstellen
+			// moments der ROIs bestimmen
+			// moments area größer als min wert?
+				// Mittelpunkt der Fläche bestimmen
+				// Mittelpunkt in vector für neue linie links/rechts schreiben
 
-		// moments area größer als min wert?
-		if(m_left.m00 > min_area_size) {
-			// Mittelpunkt der Fläche bestimmen
-			// Mittelpunkt in vector für neue linie links/rechts schreiben
-			points_left.push_back( cv::Point(m_left.m10 / m_left.m00, p_mid.y));
+		if(roi_in_mat(binary_line, rect_roi_left)) {
+			cv::Mat roi_left = binary_line(rect_roi_left);
+			cv::Moments m_left = cv::moments(roi_left,true);
+			
+			if(m_left.m00 > min_area_size) {
+				points_left.push_back( cv::Point(m_left.m10 / m_left.m00, p_mid.y));
+			}
 		}
-		if(m_right.m00 > min_area_size) {
-			// Mittelpunkt der Fläche bestimmen
-			// Mittelpunkt in vector für neue linie links/rechts schreiben
-			points_right.push_back( cv::Point(p_mid.x + m_right.m10 / m_right.m00, p_mid.y));
+
+		if(roi_in_mat(binary_line, rect_roi_right)) {
+			cv::Mat roi_right = binary_line(rect_roi_right);
+			cv::Moments m_right = cv::moments(roi_right,true);
+		
+			if(m_right.m00 > min_area_size) {
+				points_right.push_back( cv::Point(p_mid.x + m_right.m10 / m_right.m00, p_mid.y));
+			}
 		}
 	}
 
