@@ -143,7 +143,6 @@ int main() {
                 lane_mid = calc_midline(lane_left, lane_right, binary_line.size());
             }
 
-
             // VERBESSERUNG: Mittellinie um den Winkel drehen, wie sich auch links/rechts gedreht hat
 
             // sonst: nur links gefunden? : midline mit gleichem abstand setzen, wie zuvor zu links

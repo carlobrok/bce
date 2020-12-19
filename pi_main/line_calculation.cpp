@@ -68,8 +68,15 @@ void draw_boxes(cv::Mat& img, const std::vector<WindowBox>& boxes) {
 	}
 }
 
-bool roi_in_mat(cv::Mat & m, cv::Rect roi) {
-	return 0 <= roi.x && 0 <= roi.width && roi.x + roi.width <= m.cols && 0 <= roi.y && 0 <= roi.height && roi.y + roi.height <= m.rows;
+bool roi_in_mat(cv::Mat & m, cv::Rect & roi) {	
+	if(roi.x > m.cols || roi.x + roi.width < 0) {
+		return false;
+	}
+	
+	if(roi.width > m.cols) {
+		roi.width = m.cols;
+	}
+	return true;
 }
 
 void roi_search(cv::Mat & binary_line, cv::Mat & vis_draw, lane_data & lane_mid, lane_data & lane_left, lane_data & lane_right, int roi_height, int n_rois, int min_area_size) {
@@ -86,7 +93,7 @@ void roi_search(cv::Mat & binary_line, cv::Mat & vis_draw, lane_data & lane_mid,
 		cv::Rect rect_roi_left(0, binary_line.rows - (i_roi + 1) * roi_height, p_mid.x, roi_height);
 		cv::Rect rect_roi_right(p_mid.x, binary_line.rows - (i_roi + 1) * roi_height, binary_line.cols - p_mid.x, roi_height);
 
-		std::cout << "i=" << i_roi << " / left: " << rect_roi_left << " / right: " << rect_roi_right << " // area; point: ";;
+		std::cout << "i=" << i_roi << " / left: " << rect_roi_left << " / right: " << rect_roi_right << " // area; point: ";
 
 		// Ablauf:
 			// mat vom roi bereich erstellen
