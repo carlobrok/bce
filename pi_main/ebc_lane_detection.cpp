@@ -157,18 +157,17 @@ int main() {
             // timeout:
             // links oder rechts eine lane gefunden?
             
-            std::cout << "last midlane found: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - last_midlane_found).count() << std::endl;
+            std::cout << "last midlane found: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - last_midlane_found).count() << "ms" << std::endl;
             
             if (lane_left.has_lane() || lane_right.has_lane()) {
                 // last midlane zeit setzen
                 std::cout << "set midlane time" << std::endl;
                 last_midlane_found = std::chrono::system_clock::now();
                 // sonst wenn last midlane zeit zu lange her ist (z.B. > 1s) 
-            }
-
-            if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - last_midlane_found).count() > 1000) {
+            } else if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - last_midlane_found).count() > 1000) {
                 // midlane data leeren (-> windowsearch)
                 lane_mid.clear();
+                std::cout << "cleared lane_mid" << std::endl;
             }
             
                 

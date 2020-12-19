@@ -44,7 +44,7 @@ public:
 	 * @brief Leert die Daten der Klasse, has_lane ist dann false.
 	 * 
 	 */
-	void clear() { vec.zeros(); };
+	void clear() { vec = cv::Vec2f(); point = cv::Point(); }
 
 	/**
 	 * @brief Calculates the point on the line at the top (y=0) of the image.
