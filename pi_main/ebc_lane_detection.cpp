@@ -4,6 +4,8 @@
 #include "drive_calculation.hpp"
 #include "VideoServer.h"
 #include "CameraCapture.h"
+#include "lane_data.hpp"
+#include "window_box.hpp"
 
 #include <opencv2/opencv.hpp>
 
