@@ -69,7 +69,7 @@ void draw_boxes(cv::Mat& img, const std::vector<WindowBox>& boxes) {
 }
 
 
-void roi_search(cv::Mat & binary_line, lane_data & lane_mid, lane_data & lane_left, lane_data & lane_right, int roi_height, int n_rois, int min_area_size = 30) {
+void roi_search(cv::Mat & binary_line, lane_data & lane_mid, lane_data & lane_left, lane_data & lane_right, int roi_height, int n_rois, int min_area_size) {
 	
 	std::vector<cv::Point> points_left, points_right;
 	
