@@ -79,11 +79,15 @@ void roi_search(cv::Mat & binary_line, lane_data & lane_mid, lane_data & lane_le
 	{
 		cv::Point p_mid = lane_mid.at_y( i_roi * roi_height + (roi_height / 2) );
 		
-		cv::Mat roi_left = binary_line(cv::Rect(0, i_roi * roi_height, p_mid.x, roi_height));
-		cv::Mat roi_right = binary_line(cv::Rect(p_mid.x, i_roi * roi_height, binary_line.cols - p_mid.x, roi_height));
+		// rois berechnen
+		cv::Rect rect_roi_left(0, (i_roi + 1) * roi_height, p_mid.x, roi_height);
+		cv::Rect rect_roi_right(p_mid.x, (i_roi + 1) * roi_height, binary_line.cols - p_mid.x, roi_height);
+
+		// mat vom roi bereich erstellen
+		cv::Mat roi_left = binary_line(rect_roi_left);
+		cv::Mat roi_right = binary_line(rect_roi_right);
 		
 		// moments der ROIs bestimmen
-
 		cv::Moments m_left = cv::moments(roi_left,true);
 		cv::Moments m_right = cv::moments(roi_right,true);
 
@@ -96,7 +100,7 @@ void roi_search(cv::Mat & binary_line, lane_data & lane_mid, lane_data & lane_le
 		if(m_right.m00 > min_area_size) {
 			// Mittelpunkt der Fläche bestimmen
 			// Mittelpunkt in vector für neue linie links/rechts schreiben
-			points_right.push_back( cv::Point(m_right.m10 / m_right.m00, p_mid.y));
+			points_right.push_back( cv::Point(p_mid.x + m_right.m10 / m_right.m00, p_mid.y));
 		}
 	}
 

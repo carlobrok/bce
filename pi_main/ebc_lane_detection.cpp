@@ -116,6 +116,8 @@ int main() {
         
         if ( lane_mid.has_lane() ) {        // wenn mindestens eine 
 
+            std::cout << "roi search" << std::endl;
+
             // alte lane_datas zwischenspeichern
             lane_left_old = lane_left;
             lane_right_old = lane_right;
@@ -174,6 +176,8 @@ int main() {
         // eine neue midlane nach der window_search-Methode suchen
         else {
         
+            std::cout << "window search" << std::endl;
+
             // histogram peak detection
             lane_histogram(binary_line, histogram, binary_line.rows/2);
             
