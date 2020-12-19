@@ -80,11 +80,11 @@ void roi_search(cv::Mat & binary_line, cv::Mat & vis_draw, lane_data & lane_mid,
     // alle ROIs links/rechts durchgehen -> funktion 
 	for (int i_roi = 0; i_roi < n_rois; i_roi++)
 	{
-		cv::Point p_mid = lane_mid.at_y( i_roi * roi_height + (roi_height / 2) );
+		cv::Point p_mid = lane_mid.at_y( binary_line.rows - i_roi * roi_height + (roi_height / 2) );
 		
 		// rois berechnen
-		cv::Rect rect_roi_left(0, (i_roi + 1) * roi_height, p_mid.x, roi_height);
-		cv::Rect rect_roi_right(p_mid.x, (i_roi + 1) * roi_height, binary_line.cols - p_mid.x, roi_height);
+		cv::Rect rect_roi_left(0, binary_line.rows - (i_roi + 1) * roi_height, p_mid.x, roi_height);
+		cv::Rect rect_roi_right(p_mid.x, binary_line.rows - (i_roi + 1) * roi_height, binary_line.cols - p_mid.x, roi_height);
 
 		std::cout << "i=" << i_roi << " / left: " << rect_roi_left << " / right: " << rect_roi_right << " // area; point: ";;
 
@@ -97,7 +97,7 @@ void roi_search(cv::Mat & binary_line, cv::Mat & vis_draw, lane_data & lane_mid,
 
 		if(roi_in_mat(binary_line, rect_roi_left)) {
 
-			cv::rectangle(vis_draw, rect_roi_left, cv::Scalar(255, 255, 0), 2);
+			cv::rectangle(vis_draw, rect_roi_left, cv::Scalar(50, 255, 0), 1);
 
 			cv::Mat roi_left = binary_line(rect_roi_left);
 			cv::Moments m_left = cv::moments(roi_left,true);
@@ -117,7 +117,7 @@ void roi_search(cv::Mat & binary_line, cv::Mat & vis_draw, lane_data & lane_mid,
 
 		if(roi_in_mat(binary_line, rect_roi_right)) {
 
-			cv::rectangle(vis_draw, rect_roi_right, cv::Scalar(255, 255, 0), 2);
+			cv::rectangle(vis_draw, rect_roi_right, cv::Scalar(50, 255, 0), 1);
 
 			cv::Mat roi_right = binary_line(rect_roi_right);
 			cv::Moments m_right = cv::moments(roi_right,true);
