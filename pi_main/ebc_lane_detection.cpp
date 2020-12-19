@@ -152,12 +152,13 @@ int main() {
             // sonst: nur rechts gefunden? :  midline mit gleichem abstand setzen, wie zuvor zu rechts
             else if (lane_right.has_lane()) {
                 lane_mid.set_data(lane_mid.vec, lane_right.point + lane_mid.point - lane_right_old.point);
-            } 
+            }
 
             // timeout:
             // links oder rechts eine lane gefunden?
             if (lane_left.has_lane() || lane_right.has_lane()) {
                 // last midlane zeit setzen
+                std::cout << "set midlane time" << std::endl;
                 last_midlane_found = std::chrono::system_clock::now();
             // sonst wenn last midlane zeit zu lange her ist (z.B. > 1s) 
             } else if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - last_midlane_found).count() > 1000) {
