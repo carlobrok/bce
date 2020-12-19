@@ -94,24 +94,38 @@ void roi_search(cv::Mat & binary_line, lane_data & lane_mid, lane_data & lane_le
 			// moments area größer als min wert?
 				// Mittelpunkt der Fläche bestimmen
 				// Mittelpunkt in vector für neue linie links/rechts schreiben
+		
+		std::cout << "area; point: " << std::endl;
 
 		if(roi_in_mat(binary_line, rect_roi_left)) {
 			cv::Mat roi_left = binary_line(rect_roi_left);
 			cv::Moments m_left = cv::moments(roi_left,true);
 			
+			std::cout << " left: " << m_left.m00 << "; ";
+
 			if(m_left.m00 > min_area_size) {
 				points_left.push_back( cv::Point(m_left.m10 / m_left.m00, p_mid.y));
+				std::cout << cv::Point(m_left.m10 / m_left.m00, p_mid.y);
 			}
+		} else {
+			std::cout << "left not in mat";
 		}
 
 		if(roi_in_mat(binary_line, rect_roi_right)) {
 			cv::Mat roi_right = binary_line(rect_roi_right);
 			cv::Moments m_right = cv::moments(roi_right,true);
-		
+
+			std::cout << " / right: " << m_right.m00 << "; ";
+
 			if(m_right.m00 > min_area_size) {
 				points_right.push_back( cv::Point(p_mid.x + m_right.m10 / m_right.m00, p_mid.y));
+				std::cout << cv::Point(p_mid.x + m_right.m10 / m_right.m00, p_mid.y);
 			}
+		} else {
+			std::cout << " / right not in mat";
 		}
+
+		std::cout << std::endl;
 	}
 
 	lane_left.set_data(points_left);
