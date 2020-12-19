@@ -83,6 +83,8 @@ void roi_search(cv::Mat & binary_line, lane_data & lane_mid, lane_data & lane_le
 		cv::Rect rect_roi_left(0, (i_roi + 1) * roi_height, p_mid.x, roi_height);
 		cv::Rect rect_roi_right(p_mid.x, (i_roi + 1) * roi_height, binary_line.cols - p_mid.x, roi_height);
 
+		std::cout << "i=" << i_roi << "/ left: " << rect_roi_left << "/ right: " << rect_roi_right << std::endl;
+
 		// mat vom roi bereich erstellen
 		cv::Mat roi_left = binary_line(rect_roi_left);
 		cv::Mat roi_right = binary_line(rect_roi_right);
