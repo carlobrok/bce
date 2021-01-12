@@ -9,6 +9,7 @@
 
 #include <opencv2/opencv.hpp>
 
+#include <cmath>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -70,6 +71,8 @@ int main() {
 
     int speed = 0;
     double angle = 0;
+
+    int dist_left_mid = 0, dist_right_mid = 0;
 	
     while(1) {
 
@@ -144,27 +147,43 @@ int main() {
             }
 
             // VERBESSERUNG: Mittellinie um den Winkel drehen, wie sich auch links/rechts gedreht hat
+            
+            // BUG: wenn lane_.._old leer ist, dann kann die nötige Distanz zwischen lane_.. und lane_mid nicht ausgerechnet werden
+            // -> letzte distanz abspeichern und darauf zurückgreifen, falls lane_.._old leer ist
 
             // sonst: nur links gefunden? : midline mit gleichem abstand setzen, wie zuvor zu links
             else if (lane_left.has_lane()) {
-                lane_mid.set_data(lane_mid.vec, lane_left.point + lane_mid.point - lane_left_old.point);
+
+                if(lane_left_old.has_lane()) {
+                    dist_left_mid = lane_mid.point.x - lane_left_old.point.x;
+                }
+
+                lane_mid.set_data(lane_mid.vec, lane_left.point + cv::Point2f(dist_left_mid,0) );
             }
             // sonst: nur rechts gefunden? :  midline mit gleichem abstand setzen, wie zuvor zu rechts
             else if (lane_right.has_lane()) {
-                lane_mid.set_data(lane_mid.vec, lane_right.point + lane_mid.point - lane_right_old.point);
-            }
+                
+                if(lane_right_old.has_lane()) {
+                    dist_right_mid = lane_mid.point.x - lane_right_old.point.x;
+                }
 
+                lane_mid.set_data(lane_mid.vec, lane_right.point + cv::Point2f(dist_right_mid,0) );
+            }
+            
             // timeout:
+            
+            // debug timout
+            std::cout << "last midlane found is " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - last_midlane_found).count() << "ms ago" << std::endl;
+            
             // links oder rechts eine lane gefunden?
-            
-            std::cout << "last midlane found: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - last_midlane_found).count() << "ms" << std::endl;
-            
             if (lane_left.has_lane() || lane_right.has_lane()) {
                 // last midlane zeit setzen
                 std::cout << "set midlane time" << std::endl;
                 last_midlane_found = std::chrono::system_clock::now();
-                // sonst wenn last midlane zeit zu lange her ist (z.B. > 1s) 
-            } else if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - last_midlane_found).count() > 1000) {
+            }
+            
+            // sonst wenn last midlane zeit zu lange her ist (z.B. > 1s) 
+            else if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - last_midlane_found).count() > 500) {
                 // midlane data leeren (-> windowsearch)
                 lane_mid.clear();
                 std::cout << "cleared lane_mid" << std::endl;
@@ -197,8 +216,13 @@ int main() {
             draw_boxes(bgr, boxes_left);
             draw_boxes(bgr, boxes_right);
 
-            // nur midlane berechnen, wenn links und rechts eine Lane gefunden wurde
-            if( lane_left.has_lane() && lane_right.has_lane() ) { 
+            /*
+             nur midlane berechnen, wenn 
+             - links und rechts eine Lane gefunden wurde
+             - diese unten weit genug auseinander sind (weiter als 1/3 der Bildbreite)
+            */
+            if( lane_left.has_lane() && lane_right.has_lane() && abs( lane_left.bottom().x - lane_right.bottom().x ) > bgr.cols / 3 ) { 
+                
                 lane_mid = calc_midline(lane_left, lane_right, bgr.size());
  
                 last_midlane_found = std::chrono::system_clock::now();                             // last midlane zeit setzen

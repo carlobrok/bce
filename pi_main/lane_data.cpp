@@ -37,7 +37,7 @@ void lane_data::set_data(std::vector<WindowBox>& boxes, int min_points, bool res
 
 void lane_data::draw(cv::Mat & img, cv::Scalar color) {
 	if(has_lane()) {
-		std::cout << "p_top " << top() << " / p_bottom " << bottom() << std::endl;
+		//std::cout << "p_top " << top() << " / p_bottom " << bottom() << std::endl;
 		cv::line(img, top(), bottom(), color);
 	}
 }
