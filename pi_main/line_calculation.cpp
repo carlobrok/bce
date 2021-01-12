@@ -69,6 +69,7 @@ void draw_boxes(cv::Mat& img, const std::vector<WindowBox>& boxes) {
 }
 
 bool roi_in_mat(cv::Mat & m, cv::Rect & roi) {
+	std::cout << "(width: " << roi.width << ")" << std::flush;
 	if(roi.x > m.cols || roi.width < 0 || (roi.x + roi.width) < 0) {
 		return false;
 	}
